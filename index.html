@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SION — 메인</title>
+  <link rel="stylesheet" href="sion.css"/>
+  <style>
+    /* ── 메인 전용 ───────────────────────── */
+    .dash-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 16px;
+    }
+    .dash-grid .span2 { grid-column: span 2; }
+    .dash-grid .span3 { grid-column: span 3; }
+
+    /* 히어로 (SION AI 영역 플레이스홀더) */
+    .sion-hero {
+      grid-column: span 3;
+      background: var(--bg-raised);
+      border: 1px solid var(--line-mid);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sion-hero::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, var(--ac-dim) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .sion-avatar {
+      width: 64px; height: 64px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #00c4a0 0%, #006e5a 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--bg-base);
+      flex-shrink: 0;
+      box-shadow: 0 0 0 1px var(--ac-glow), 0 8px 24px rgba(0,196,160,0.2);
+    }
+    .sion-hero-text { flex: 1; }
+    .sion-hero-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--ac);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+      font-family: var(--font-mono);
+    }
+    .sion-hero-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--tx-1);
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+    }
+    .sion-hero-sub {
+      font-size: 0.825rem;
+      color: var(--tx-2);
+      line-height: 1.6;
+    }
+    .sion-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+    .sion-status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--ac);
+      box-shadow: 0 0 6px var(--ac);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; }
+      50%      { opacity:0.4; }
+    }
+    .sion-upcoming {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 14px 16px;
+      background: var(--bg-float);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line-mid);
+      min-width: 180px;
+    }
+    .sion-upcoming-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--tx-3);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    /* 통계 카드 */
+    .stat-row {
+      grid-column: span 3;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: var(--bg-raised);
+      border: 1px solid var(--line-mid);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      text-decoration: none;
+    }
+    .stat-card:hover { border-color: var(--line-hi); }
+    .stat-card:hover .stat-num { color: var(--ac); }
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--tx-3);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+    .stat-num {
+      font-size: 2rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--tx-3);
+    }
+    .stat-card.accent { border-color: var(--ac-dim); }
+    .stat-card.accent .stat-num { color: var(--ac); }
+
+    /* 오늘 일정 */
+    .today-list { display: flex; flex-direction: column; gap: 6px; }
+    .today-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-float);
+      border: 1px solid transparent;
+      transition: border-color 0.15s;
+      cursor: pointer;
+    }
+    .today-item:hover { border-color: var(--line-mid); }
+    .today-item.done { opacity: 0.45; }
+    .today-item.done .today-name { text-decoration: line-through; color: var(--tx-3); }
+    .today-check {
+      width: 18px; height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--line-hi);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      color: var(--ac);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .today-check.done { background: var(--ac); border-color: var(--ac); color: var(--bg-base); }
+    .today-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: var(--tx-1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .today-time { font-size: 0.72rem; color: var(--tx-3); font-family: var(--font-mono); white-space: nowrap; }
+
+    /* 시험 D-day */
+    .exam-list { display: flex; flex-direction: column; gap: 6px; }
+    .exam-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-float);
+    }
+    .exam-dday {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      min-width: 46px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-align: center;
+    }
+    .exam-dday.today  { background: rgba(248,113,113,0.15); color: var(--red); }
+    .exam-dday.soon   { background: rgba(251,191,36,0.12);  color: var(--yellow); }
+    .exam-dday.past   { background: var(--bg-overlay); color: var(--tx-3); }
+    .exam-dday:not(.today):not(.soon):not(.past) { background: var(--ac-dim); color: var(--ac); }
+    .exam-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: var(--tx-1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .exam-date { font-size: 0.72rem; color: var(--tx-3); font-family: var(--font-mono); white-space: nowrap; }
+
+    /* 시스템 상태 */
+    .sys-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .sys-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line-sub);
+    }
+    .sys-item:last-child { border-bottom: none; }
+    .sys-item-label { font-size: 0.78rem; color: var(--tx-3); }
+    .sys-item-val {
+      font-size: 0.78rem;
+      font-family: var(--font-mono);
+      color: var(--tx-1);
+    }
+    .sys-item-val.ok  { color: var(--green); }
+    .sys-item-val.err { color: var(--red); }
+
+    @media (max-width: 1024px) {
+      .dash-grid { grid-template-columns: 1fr 1fr; }
+      .sion-hero, .stat-row { grid-column: span 2; }
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .sion-upcoming { display: none; }
+    }
+    @media (max-width: 640px) {
+      .dash-grid { grid-template-columns: 1fr; }
+      .sion-hero, .stat-row, .dash-grid .span2 { grid-column: span 1; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .sion-hero { flex-direction: column; align-items: flex-start; gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">SI</div>
+      <span class="brand-name">SION</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">메인</span>
+      <a href="index.html" class="nav-link active">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-label">대시보드</span>
+      </a>
+      <span class="nav-section-label">관리</span>
+      <a href="schedule.html" class="nav-link">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="nav-label">스케쥴</span>
+        <span class="nav-badge" id="nb-schedule">0</span>
+      </a>
+      <a href="vault.html" class="nav-link">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">자료보관함</span>
+      </a>
+      <span class="nav-section-label">예정</span>
+      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">대화보관함</span>
+      </a>
+      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span class="nav-label">SION AI</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <svg class="toggle-ico nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M21 19l-7-7 7-7"/></svg>
+        <span style="font-size:0.8rem;color:var(--tx-3)">접기</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 메인 -->
+  <div class="content" id="content">
+    <div class="topbar">
+      <span class="topbar-path">SION /</span>
+      <span class="topbar-title">대시보드</span>
+      <div class="topbar-right">
+        <span id="topbar-date" style="font-size:0.78rem;color:var(--tx-3);font-family:var(--font-mono)"></span>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="dash-grid">
+
+        <!-- SION 히어로 -->
+        <div class="sion-hero">
+          <div class="sion-avatar">SI</div>
+          <div class="sion-hero-text">
+            <div class="sion-hero-label">AI Assistant</div>
+            <div class="sion-hero-title" id="hero-greeting">안녕하세요</div>
+            <div class="sion-hero-sub">SION이 준비되어 있습니다. AI 기능은 다음 업데이트에서 활성화됩니다.</div>
+            <div class="sion-status" style="margin-top:10px">
+              <div class="sion-status-dot"></div>
+              <span>시스템 정상 · Supabase 연결됨</span>
+            </div>
+          </div>
+          <div class="sion-upcoming" id="hero-upcoming">
+            <div class="sion-upcoming-label">오늘 남은 일정</div>
+            <div id="hero-upcoming-list" style="font-size:0.8rem;color:var(--tx-3)">불러오는 중...</div>
+          </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="stat-row">
+          <a href="schedule.html" class="stat-card accent">
+            <div class="stat-label">오늘 일정</div>
+            <div class="stat-num" id="stat-today">—</div>
+            <div class="stat-sub">개 항목</div>
+          </a>
+          <a href="schedule.html" class="stat-card">
+            <div class="stat-label">완료</div>
+            <div class="stat-num" id="stat-done">—</div>
+            <div class="stat-sub">개 완료됨</div>
+          </a>
+          <a href="schedule.html" class="stat-card">
+            <div class="stat-label">다가오는 시험</div>
+            <div class="stat-num" id="stat-exam">—</div>
+            <div class="stat-sub">일 후</div>
+          </a>
+          <a href="vault.html" class="stat-card">
+            <div class="stat-label">자료</div>
+            <div class="stat-num" id="stat-vault">—</div>
+            <div class="stat-sub">개 항목</div>
+          </a>
+        </div>
+
+        <!-- 오늘의 일정 -->
+        <div class="card span2">
+          <div class="card-header">
+            <span class="card-title">오늘의 일정</span>
+            <a href="schedule.html" class="btn btn-ghost btn-sm">전체보기</a>
+          </div>
+          <div class="today-list" id="today-list">
+            <div class="skeleton" style="height:38px"></div>
+            <div class="skeleton" style="height:38px"></div>
+            <div class="skeleton" style="height:38px"></div>
+          </div>
+        </div>
+
+        <!-- 다가오는 시험 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">시험 D-day</span>
+            <a href="schedule.html?cat=시험" class="btn btn-ghost btn-sm">시험 목록</a>
+          </div>
+          <div class="exam-list" id="exam-list">
+            <div class="skeleton" style="height:38px"></div>
+            <div class="skeleton" style="height:38px"></div>
+          </div>
+        </div>
+
+        <!-- 시스템 상태 -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">시스템</span>
+          </div>
+          <div id="sys-status">
+            <div class="sys-grid">
+              <div>
+                <div class="sys-item"><span class="sys-item-label">데이터베이스</span><span class="sys-item-val" id="sys-db">확인중</span></div>
+                <div class="sys-item"><span class="sys-item-label">AI 엔진</span><span class="sys-item-val" style="color:var(--tx-3)">비활성</span></div>
+              </div>
+              <div>
+                <div class="sys-item"><span class="sys-item-label">스케쥴</span><span class="sys-item-val" id="sys-sched">—</span></div>
+                <div class="sys-item"><span class="sys-item-label">자료</span><span class="sys-item-val" id="sys-vault">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 최근 자료 -->
+        <div class="card span2">
+          <div class="card-header">
+            <span class="card-title">최근 자료</span>
+            <a href="vault.html" class="btn btn-ghost btn-sm">자료보관함</a>
+          </div>
+          <div id="recent-vault-list">
+            <div class="skeleton" style="height:38px;margin-bottom:6px"></div>
+            <div class="skeleton" style="height:38px;margin-bottom:6px"></div>
+            <div class="skeleton" style="height:38px"></div>
+          </div>
+        </div>
+
+      </div><!-- /.dash-grid -->
+    </div><!-- /.page -->
+  </div><!-- /.content -->
+</div><!-- /.app -->
+
+<div id="toast-container"></div>
+
+<script src="sion.js"></script>
+<script>
+(async () => {
+  SION.ui.initSidebar();
+
+  // 날짜 표시
+  const now = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('topbar-date').textContent =
+    `${now.getFullYear()}.${SION.util.pad(now.getMonth()+1)}.${SION.util.pad(now.getDate())} ${days[now.getDay()]}`;
+
+  // 인사말
+  const h = now.getHours();
+  const greet = h < 6 ? '늦은 밤이네요' : h < 12 ? '좋은 아침이에요' : h < 18 ? '안녕하세요' : '좋은 저녁이에요';
+  document.getElementById('hero-greeting').textContent = greet;
+
+  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
+  const todayEnd   = new Date(now); todayEnd.setHours(23,59,59,999);
+
+  // ── 오늘 일정 ─────────────────────────────
+  try {
+    const data = await SION.db.select('schedule',
+      `s_date=gte.${SION.date.toISO(todayStart)}&s_date=lte.${SION.date.toISO(todayEnd)}&order=s_date.asc&limit=8`
+    );
+    const done = data.filter(d => d.s_end === true).length;
+    document.getElementById('stat-today').textContent = data.length;
+    document.getElementById('stat-done').textContent  = done;
+    document.getElementById('sys-sched').textContent  = `${data.length}건`;
+    document.getElementById('sys-db').textContent     = '정상';
+    document.getElementById('sys-db').className       = 'sys-item-val ok';
+
+    const list = document.getElementById('today-list');
+    if (data.length === 0) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">오늘 일정이 없습니다</div></div>`;
+    } else {
+      list.innerHTML = data.map(item => `
+        <div class="today-item ${item.s_end ? 'done' : ''}" data-id="${item.id}">
+          <div class="today-check ${item.s_end ? 'done' : ''}" data-id="${item.id}">
+            ${item.s_end ? '<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' : ''}
+          </div>
+          <span class="today-name">${SION.util.esc(item.s_name)}</span>
+          <span>${SION.ui.catBadge(item.s_category)}</span>
+          <span class="today-time">${SION.date.fmtDateTime(item.s_date)}</span>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.today-check').forEach(btn => {
+        btn.addEventListener('click', async e => {
+          e.stopPropagation();
+          const id = btn.dataset.id;
+          const item = data.find(d => String(d.id) === id);
+          if (!item) return;
+          try {
+            await SION.db.update('schedule', `id=eq.${id}`, { s_end: !item.s_end });
+            item.s_end = !item.s_end;
+            btn.closest('.today-item').classList.toggle('done', item.s_end);
+            btn.classList.toggle('done', item.s_end);
+            btn.innerHTML = item.s_end ? '<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' : '';
+            SION.ui.toast(item.s_end ? '완료 처리됨' : '미완료로 변경됨', 'success');
+          } catch(e) { SION.ui.toast('오류: ' + e.message, 'error'); }
+        });
+      });
+    }
+
+    // 히어로 남은 일정
+    const remaining = data.filter(d => !d.s_end);
+    const heroList = document.getElementById('hero-upcoming-list');
+    if (remaining.length === 0) {
+      heroList.innerHTML = '<span style="color:var(--ac)">모두 완료! 🎉</span>';
+    } else {
+      heroList.innerHTML = remaining.slice(0,3).map(i =>
+        `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
+          <div style="width:4px;height:4px;border-radius:50%;background:var(--ac);flex-shrink:0"></div>
+          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-1);font-size:0.8rem">${SION.util.esc(i.s_name)}</span>
+        </div>`
+      ).join('') + (remaining.length > 3 ? `<div style="color:var(--tx-3);font-size:0.72rem;margin-top:4px">+${remaining.length-3}개 더</div>` : '');
+    }
+
+  } catch(e) {
+    document.getElementById('sys-db').textContent = '오류';
+    document.getElementById('sys-db').className   = 'sys-item-val err';
+    document.getElementById('today-list').innerHTML = `<div class="empty-state"><div class="empty-state-text">데이터를 불러올 수 없습니다</div><div class="empty-state-sub">${SION.util.esc(e.message)}</div></div>`;
+  }
+
+  // ── 시험 D-day ────────────────────────────
+  try {
+    const exams = await SION.db.select('schedule',
+      `s_category=eq.시험&s_end=eq.false&s_date=gte.${SION.date.toISO(todayStart)}&order=s_date.asc&limit=4`
+    );
+
+    if (exams.length > 0) {
+      const days_left = Math.round((new Date(exams[0].s_date) - now) / 86400000);
+      document.getElementById('stat-exam').textContent = Math.max(0, days_left);
+    } else {
+      document.getElementById('stat-exam').textContent = '—';
+    }
+
+    const examList = document.getElementById('exam-list');
+    if (exams.length === 0) {
+      examList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">예정된 시험이 없습니다</div></div>`;
+    } else {
+      examList.innerHTML = exams.map(item => {
+        const ds = SION.date.toDate(new Date(item.s_date));
+        const dd = SION.date.dday(ds);
+        return `
+          <div class="exam-item">
+            <span class="exam-dday ${dd.cls}">${dd.label}</span>
+            <span class="exam-name">${SION.util.esc(item.s_name)}</span>
+            <span class="exam-date">${SION.date.fmtDate(item.s_date)}</span>
+          </div>`;
+      }).join('');
+    }
+  } catch(e) { document.getElementById('exam-list').innerHTML = ''; }
+
+  // ── 자료보관함 ────────────────────────────
+  try {
+    const vaults = await SION.db.select('vault', 'order=updated_at.desc&limit=3');
+    document.getElementById('stat-vault').textContent = vaults.length;
+    document.getElementById('sys-vault').textContent  = `${vaults.length}건`;
+
+    const rvList = document.getElementById('recent-vault-list');
+    if (vaults.length === 0) {
+      rvList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📁</div><div class="empty-state-text">자료가 없습니다</div></div>`;
+    } else {
+      rvList.innerHTML = vaults.map(v => `
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);background:var(--bg-float);margin-bottom:6px">
+          <span style="font-size:0.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-1)">${SION.util.esc(v.v_title)}</span>
+          <span class="badge badge-기타" style="font-size:0.65rem">${SION.util.esc(v.v_category||'기타')}</span>
+          <span style="font-size:0.7rem;color:var(--tx-3);font-family:var(--font-mono)">${SION.date.fmtDate(v.updated_at)}</span>
+        </div>
+      `).join('');
+    }
+  } catch(e) {}
+
+  // ── 전체 자료 수 재요청 ───────────────────
+  try {
+    const resp = await fetch(`https://cszwasbxeczeocmdifqj.supabase.co/rest/v1/vault?select=id`, {
+      headers: { 'apikey': 'sb_publishable_oyd1ya6arSUwFLhHxC4ixQ_BNJ9WpVn', 'Prefer': 'count=exact' }
+    });
+    const count = resp.headers.get('content-range')?.split('/')[1];
+    if (count) document.getElementById('stat-vault').textContent = count;
+  } catch(e) {}
+
+  // 스케쥴 뱃지
+  try {
+    const today = await SION.db.select('schedule',
+      `s_date=gte.${SION.date.toISO(todayStart)}&s_date=lte.${SION.date.toISO(todayEnd)}&s_end=eq.false`
+    );
+    const nb = document.getElementById('nb-schedule');
+    if (nb) nb.textContent = today.length;
+  } catch(e) {}
+
+})();
+</script>
+</body>
+</html>
