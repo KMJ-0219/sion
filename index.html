@@ -3,253 +3,600 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-  <title>SION — 메인</title>
+  <title>SION — 스케쥴</title>
   <link rel="stylesheet" href="sion.css"/>
   <style>
-    /* ── 메인 전용 ───────────────────────── */
-    .dash-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-template-rows: auto auto;
-      gap: 16px;
-    }
-    .dash-grid .span2 { grid-column: span 2; }
-    .dash-grid .span3 { grid-column: span 3; }
+/* ═══════════════════════════════════════════
+   스케쥴 전용
+═══════════════════════════════════════════ */
+.sched-wrap {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+}
+.sched-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--line-sub);
+  background: var(--bg-base);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
+.nav-btn {
+  width: 30px; height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--line-mid);
+  background: transparent;
+  color: var(--tx-2);
+  font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.nav-btn:hover { background: var(--bg-overlay); color: var(--tx-1); }
+.today-btn {
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid var(--line-mid);
+  background: transparent;
+  color: var(--tx-2);
+  font-size: 0.775rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.today-btn:hover { background: var(--bg-overlay); color: var(--tx-1); }
+.period-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--tx-1);
+  font-family: var(--font-mono);
+  min-width: 130px;
+}
+.view-tabs {
+  display: flex;
+  background: var(--bg-raised);
+  border: 1px solid var(--line-mid);
+  border-radius: 7px;
+  padding: 3px;
+  gap: 2px;
+}
+.view-tab {
+  padding: 4px 11px;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--tx-3);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.view-tab.active {
+  background: var(--bg-float);
+  color: var(--tx-1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.compact-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: 1px solid var(--line-mid);
+  background: transparent;
+  color: var(--tx-3);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.compact-btn:hover { border-color: var(--line-hi); color: var(--tx-1); }
+.compact-btn.on { background: var(--ac-dim); border-color: var(--ac); color: var(--ac); }
 
-    /* 히어로 (SION AI 영역 플레이스홀더) */
-    .sion-hero {
-      grid-column: span 3;
-      background: var(--bg-raised);
-      border: 1px solid var(--line-mid);
-      border-radius: var(--radius);
-      padding: 32px 28px;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-      position: relative;
-      overflow: hidden;
-    }
-    .sion-hero::before {
-      content: '';
-      position: absolute;
-      top: -60px; right: -60px;
-      width: 240px; height: 240px;
-      background: radial-gradient(circle, var(--ac-dim) 0%, transparent 70%);
-      pointer-events: none;
-    }
-    .sion-avatar {
-      width: 64px; height: 64px;
-      border-radius: 16px;
-      background: linear-gradient(135deg, #00c4a0 0%, #006e5a 100%);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--bg-base);
-      flex-shrink: 0;
-      box-shadow: 0 0 0 1px var(--ac-glow), 0 8px 24px rgba(0,196,160,0.2);
-    }
-    .sion-hero-text { flex: 1; }
-    .sion-hero-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--ac);
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      font-family: var(--font-mono);
-    }
-    .sion-hero-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--tx-1);
-      letter-spacing: -0.02em;
-      margin-bottom: 6px;
-    }
-    .sion-hero-sub {
-      font-size: 0.825rem;
-      color: var(--tx-2);
-      line-height: 1.6;
-    }
-    .sion-status {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.72rem;
-      color: var(--tx-3);
-      font-family: var(--font-mono);
-    }
-    .sion-status-dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: var(--ac);
-      box-shadow: 0 0 6px var(--ac);
-      animation: pulse-dot 2s ease-in-out infinite;
-    }
-    @keyframes pulse-dot {
-      0%,100% { opacity:1; }
-      50%      { opacity:0.4; }
-    }
-    .sion-upcoming {
-      flex-shrink: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 14px 16px;
-      background: var(--bg-float);
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--line-mid);
-      min-width: 180px;
-    }
-    .sion-upcoming-label {
-      font-size: 0.65rem;
-      font-weight: 600;
-      color: var(--tx-3);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
+.hd-stats {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+}
+.hd-stat { text-align: right; }
+.hd-stat-n {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--tx-1);
+  display: block;
+  line-height: 1;
+}
+.hd-stat-n.ac { color: var(--ac); }
+.hd-stat-l {
+  font-size: 0.6rem;
+  color: var(--tx-3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.prog-strip {
+  height: 2px;
+  background: transparent;
+  flex-shrink: 0;
+}
+.prog-fill {
+  height: 100%;
+  background: var(--ac);
+  transition: width 0.6s ease;
+  border-radius: 0 1px 1px 0;
+}
 
-    /* 통계 카드 */
-    .stat-row {
-      grid-column: span 3;
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-    }
-    .stat-card {
-      background: var(--bg-raised);
-      border: 1px solid var(--line-mid);
-      border-radius: var(--radius);
-      padding: 18px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      cursor: pointer;
-      transition: border-color 0.15s;
-      text-decoration: none;
-    }
-    .stat-card:hover { border-color: var(--line-hi); }
-    .stat-card:hover .stat-num { color: var(--ac); }
-    .stat-label {
-      font-size: 0.7rem;
-      font-weight: 600;
-      color: var(--tx-3);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-    }
-    .stat-num {
-      font-size: 2rem;
-      font-weight: 700;
-      font-family: var(--font-mono);
-      color: var(--tx-1);
-      line-height: 1;
-      transition: color 0.15s;
-    }
-    .stat-sub {
-      font-size: 0.75rem;
-      color: var(--tx-3);
-    }
-    .stat-card.accent { border-color: var(--ac-dim); }
-    .stat-card.accent .stat-num { color: var(--ac); }
+/* 3단 바디 */
+.sched-body {
+  display: grid;
+  grid-template-columns: 240px 1fr 320px;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+.panel-left {
+  border-right: 1px solid var(--line-sub);
+  overflow-y: auto;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: var(--bg-raised);
+}
+.panel-center {
+  overflow-y: auto;
+  background: var(--bg-base);
+}
+.panel-right {
+  border-left: 1px solid var(--line-sub);
+  background: var(--bg-raised);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
-    /* 오늘 일정 */
-    .today-list { display: flex; flex-direction: column; gap: 6px; }
-    .today-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-float);
-      border: 1px solid transparent;
-      transition: border-color 0.15s;
-      cursor: pointer;
-    }
-    .today-item:hover { border-color: var(--line-mid); }
-    .today-item.done { opacity: 0.45; }
-    .today-item.done .today-name { text-decoration: line-through; color: var(--tx-3); }
-    .today-check {
-      width: 18px; height: 18px;
-      border-radius: 5px;
-      border: 1.5px solid var(--line-hi);
-      flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem;
-      color: var(--ac);
-      transition: all 0.15s;
-      cursor: pointer;
-    }
-    .today-check.done { background: var(--ac); border-color: var(--ac); color: var(--bg-base); }
-    .today-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: var(--tx-1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .today-time { font-size: 0.72rem; color: var(--tx-3); font-family: var(--font-mono); white-space: nowrap; }
+/* ── 왼쪽 패널 ─── */
+.search-box { position: relative; }
+.search-box input { padding-right: 30px; }
+.search-box svg { position: absolute; right: 9px; top: 50%; transform: translateY(-50%); color: var(--tx-3); pointer-events: none; }
+.sec-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--tx-3);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 5px;
+}
+.done-seg {
+  display: flex;
+  background: var(--bg-base);
+  border-radius: 7px;
+  padding: 3px;
+  gap: 2px;
+}
+.done-seg-btn {
+  flex: 1; padding: 4px 0;
+  border-radius: 5px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--tx-3);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.done-seg-btn.active { background: var(--bg-float); color: var(--tx-1); box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-    /* 시험 D-day */
-    .exam-list { display: flex; flex-direction: column; gap: 6px; }
-    .exam-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-float);
-    }
-    .exam-dday {
-      font-family: var(--font-mono);
-      font-size: 0.75rem;
-      font-weight: 700;
-      min-width: 46px;
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-align: center;
-    }
-    .exam-dday.today  { background: rgba(248,113,113,0.15); color: var(--red); }
-    .exam-dday.soon   { background: rgba(251,191,36,0.12);  color: var(--yellow); }
-    .exam-dday.past   { background: var(--bg-overlay); color: var(--tx-3); }
-    .exam-dday:not(.today):not(.soon):not(.past) { background: var(--ac-dim); color: var(--ac); }
-    .exam-name { flex: 1; font-size: 0.85rem; font-weight: 500; color: var(--tx-1); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .exam-date { font-size: 0.72rem; color: var(--tx-3); font-family: var(--font-mono); white-space: nowrap; }
+.cat-rows { display: flex; flex-direction: column; gap: 1px; }
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--tx-2);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.12s, color 0.12s;
+}
+.cat-row:hover { background: var(--bg-overlay); color: var(--tx-1); }
+.cat-row.active { background: var(--ac-dim); color: var(--ac); }
+.cat-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.cat-n {
+  margin-left: auto;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  color: var(--tx-4);
+  background: var(--bg-base);
+  padding: 1px 5px;
+  border-radius: 8px;
+}
+.cat-row.active .cat-n { color: var(--ac); background: rgba(0,196,160,0.1); }
 
-    /* 시스템 상태 */
-    .sys-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-    }
-    .sys-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--line-sub);
-    }
-    .sys-item:last-child { border-bottom: none; }
-    .sys-item-label { font-size: 0.78rem; color: var(--tx-3); }
-    .sys-item-val {
-      font-size: 0.78rem;
-      font-family: var(--font-mono);
-      color: var(--tx-1);
-    }
-    .sys-item-val.ok  { color: var(--green); }
-    .sys-item-val.err { color: var(--red); }
+.up-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.up-item:hover { background: var(--bg-overlay); }
+.up-dd {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 34px;
+  padding: 2px 4px;
+  border-radius: 3px;
+  text-align: center;
+}
+.up-dd.t { background: rgba(248,113,113,0.15); color: #f87171; }
+.up-dd.s { background: rgba(251,191,36,0.12);  color: #fbbf24; }
+.up-dd.n { background: var(--ac-dim); color: var(--ac); }
+.up-name {
+  font-size: 0.76rem;
+  color: var(--tx-1);
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-    @media (max-width: 1024px) {
-      .dash-grid { grid-template-columns: 1fr 1fr; }
-      .sion-hero, .stat-row { grid-column: span 2; }
-      .stat-row { grid-template-columns: repeat(2, 1fr); }
-      .sion-upcoming { display: none; }
-    }
-    @media (max-width: 640px) {
-      .dash-grid { grid-template-columns: 1fr; }
-      .sion-hero, .stat-row, .dash-grid .span2 { grid-column: span 1; }
-      .stat-row { grid-template-columns: 1fr 1fr; }
-      .sion-hero { flex-direction: column; align-items: flex-start; gap: 16px; }
-    }
+/* ── 캘린더 ─── */
+.cal-wrap { padding: 14px 16px; min-height: 100%; box-sizing: border-box; }
+.cal-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 5px;
+}
+.cal-dow {
+  text-align: center;
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--tx-3);
+  padding: 4px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.cal-dow.sun { color: #f87171; }
+.cal-dow.sat { color: #60a5fa; }
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+.cal-cell {
+  border-radius: 7px;
+  padding: 6px 6px 5px;
+  background: var(--bg-raised);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  min-height: 88px;
+}
+.cal-cell:hover { border-color: var(--line-hi); background: var(--bg-float); }
+.cal-cell.today { border-color: rgba(0,196,160,0.5); background: var(--ac-soft); }
+.cal-cell.selected { border-color: var(--ac); background: var(--ac-dim); box-shadow: 0 0 0 1px var(--ac-dim); }
+.cal-cell.other { opacity: 0.28; }
+.cal-cell.sun .cdn { color: #f87171; }
+.cal-cell.sat .cdn { color: #60a5fa; }
+.cdn {
+  font-family: var(--font-mono);
+  font-size: 0.77rem;
+  font-weight: 700;
+  color: var(--tx-2);
+  line-height: 1;
+  flex-shrink: 0;
+}
+.cal-cell.today .cdn {
+  color: var(--ac);
+  background: rgba(0,196,160,0.18);
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem;
+}
+.cal-chips { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow: hidden; }
+.cchip {
+  font-size: 0.62rem;
+  padding: 1px 4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+  line-height: 1.4;
+  flex-shrink: 0;
+}
+.cchip.done { opacity: 0.32; text-decoration: line-through; }
+.cchip.cat-과제 { background: rgba(96,165,250,0.14); color: #60a5fa; }
+.cchip.cat-수행 { background: rgba(167,139,250,0.14); color: #a78bfa; }
+.cchip.cat-시험 { background: rgba(248,113,113,0.14); color: #f87171; }
+.cchip.cat-약속 { background: rgba(52,211,153,0.14);  color: #34d399; }
+.cchip.cat-기타 { background: rgba(148,163,184,0.09); color: #94a3b8; }
+.cmore { font-size: 0.58rem; color: var(--tx-3); padding-left: 2px; }
+.cal-dday-badge {
+  position: absolute;
+  top: 4px; right: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: rgba(248,113,113,0.14);
+  color: #f87171;
+  pointer-events: none;
+}
+/* compact */
+.cal-grid.compact .cal-cell { min-height: 46px; }
+.cal-grid.compact .cal-chips { display: none; }
+.cal-grid.compact .dot-row { display: flex !important; }
+.dot-row {
+  display: none;
+  gap: 2px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+.cdot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── 주간/목록 뷰 ─── */
+.week-view { padding: 14px 16px; }
+.week-grid {
+  display: grid;
+  grid-template-columns: 52px repeat(7,1fr);
+  border: 1px solid var(--line-mid);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.wh-cell {
+  padding: 8px 6px;
+  background: var(--bg-float);
+  border-bottom: 1px solid var(--line-mid);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--tx-2);
+}
+.wh-cell.today-col { color: var(--ac); }
+.wh-cell.border-l { border-left: 1px solid var(--line-sub); }
+.wt-cell {
+  height: 44px;
+  padding: 3px 6px;
+  font-size: 0.62rem;
+  font-family: var(--font-mono);
+  color: var(--tx-4);
+  border-bottom: 1px solid var(--line-sub);
+  display: flex; align-items: flex-start;
+}
+.ws-cell {
+  height: 44px;
+  border-bottom: 1px solid var(--line-sub);
+  border-left: 1px solid var(--line-sub);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ws-cell:hover { background: var(--ac-soft); }
+.wev {
+  position: absolute;
+  left: 1px; right: 1px;
+  border-radius: 3px;
+  padding: 1px 4px;
+  font-size: 0.6rem;
+  font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  z-index: 2;
+  cursor: pointer;
+}
+.list-view { padding: 14px 16px; display: flex; flex-direction: column; gap: 18px; }
+.ld-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tx-2);
+  font-family: var(--font-mono);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line-sub);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.ld-label.today { color: var(--ac); }
+.ld-cnt {
+  font-size: 0.62rem;
+  color: var(--tx-3);
+  background: var(--bg-overlay);
+  padding: 1px 6px;
+  border-radius: 9px;
+}
+
+/* ── 오른쪽 패널 ─── */
+.rh {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--line-sub);
+  flex-shrink: 0;
+}
+.rh-date-n {
+  font-size: 2.2rem;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  color: var(--tx-1);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.rh-meta {
+  font-size: 0.72rem;
+  color: var(--tx-3);
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.rh-dday {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 5px;
+  background: rgba(248,113,113,0.12);
+  color: #f87171;
+}
+.rb {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.rb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: var(--tx-3);
+  padding: 30px 0;
+  text-align: center;
+}
+
+/* 오른쪽 일정 아이템 */
+.ri {
+  background: var(--bg-float);
+  border: 1px solid var(--line-mid);
+  border-radius: 8px;
+  padding: 10px 11px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  transition: border-color 0.12s;
+}
+.ri:hover { border-color: var(--line-hi); }
+.ri.done { opacity: 0.38; }
+.ri.done .ri-name { text-decoration: line-through; color: var(--tx-3); }
+.ri-bar {
+  width: 3px;
+  align-self: stretch;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.ri-bar.cat-과제 { background: #60a5fa; }
+.ri-bar.cat-수행 { background: #a78bfa; }
+.ri-bar.cat-시험 { background: #f87171; }
+.ri-bar.cat-약속 { background: #34d399; }
+.ri-bar.cat-기타 { background: #475569; }
+.ri-chk {
+  width: 17px; height: 17px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line-hi);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ri-chk:hover { border-color: var(--ac); }
+.ri-chk.done { background: var(--ac); border-color: var(--ac); }
+.ri-bd { flex: 1; min-width: 0; }
+.ri-name {
+  font-size: 0.845rem;
+  font-weight: 500;
+  color: var(--tx-1);
+  margin-bottom: 3px;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.ri-meta { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.ri-time { font-size: 0.68rem; color: var(--tx-3); font-family: var(--font-mono); }
+.ri-kws { display: flex; gap: 3px; }
+.ri-kw {
+  font-size: 0.6rem;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--bg-overlay);
+  color: var(--tx-3);
+}
+.ri-prev { font-size: 0.72rem; color: var(--tx-3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ri-acts {
+  display: flex; gap: 2px;
+  opacity: 0; transition: opacity 0.12s;
+  flex-shrink: 0;
+}
+.ri:hover .ri-acts { opacity: 1; }
+
+/* 인라인 추가 */
+.inline-form {
+  background: rgba(0,196,160,0.05);
+  border: 1px solid var(--ac);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  display: none;
+}
+.inline-form.open { display: flex; }
+.if-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+.rf {
+  padding: 10px 12px;
+  border-top: 1px solid var(--line-sub);
+  flex-shrink: 0;
+}
+.add-btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 7px;
+  border: 1px dashed var(--line-hi);
+  background: transparent;
+  color: var(--tx-3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.add-btn:hover { border-color: var(--ac); color: var(--ac); background: var(--ac-soft); }
+
+/* 반응형 */
+@media (max-width: 1280px) {
+  .sched-body { grid-template-columns: 210px 1fr 290px; }
+}
+@media (max-width: 1100px) {
+  .sched-body { grid-template-columns: 0 1fr 290px; }
+  .panel-left { display: none; }
+}
+@media (max-width: 800px) {
+  .sched-body { grid-template-columns: 1fr; }
+  .panel-right { display: none; }
+  .sched-wrap { height: auto; }
+  .panel-center { min-height: 70vh; }
+}
   </style>
 </head>
 <body>
 <div class="app">
 
-  <!-- 사이드바 -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-mark">SI</div>
@@ -257,26 +604,25 @@
     </div>
     <nav class="sidebar-nav">
       <span class="nav-section-label">메인</span>
-      <a href="index.html" class="nav-link active">
+      <a href="index.html" class="nav-link">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
         <span class="nav-label">대시보드</span>
       </a>
       <span class="nav-section-label">관리</span>
-      <a href="schedule.html" class="nav-link">
+      <a href="schedule.html" class="nav-link active">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
         <span class="nav-label">스케쥴</span>
-        <span class="nav-badge" id="nb-schedule">0</span>
       </a>
       <a href="vault.html" class="nav-link">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">자료보관함</span>
       </a>
       <span class="nav-section-label">예정</span>
-      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+      <a href="#" class="nav-link" style="opacity:0.35;pointer-events:none">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">대화보관함</span>
       </a>
-      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+      <a href="#" class="nav-link" style="opacity:0.35;pointer-events:none">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
         <span class="nav-label">SION AI</span>
       </a>
@@ -289,278 +635,711 @@
     </div>
   </aside>
 
-  <!-- 메인 -->
   <div class="content" id="content">
     <div class="topbar">
-      <span class="topbar-path">SION /</span>
-      <span class="topbar-title">대시보드</span>
+      <span class="topbar-path">SION / 관리 /</span>
+      <span class="topbar-title">스케쥴</span>
       <div class="topbar-right">
-        <span id="topbar-date" style="font-size:0.78rem;color:var(--tx-3);font-family:var(--font-mono)"></span>
+        <button class="btn btn-primary" id="btn-add-top">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          일정 추가
+        </button>
       </div>
     </div>
 
-    <div class="page">
-      <div class="dash-grid">
+    <div class="sched-wrap">
+      <!-- 헤더 바 -->
+      <div class="sched-header">
+        <button class="nav-btn" id="nav-prev">‹</button>
+        <button class="today-btn" id="nav-today">오늘</button>
+        <button class="nav-btn" id="nav-next">›</button>
+        <span class="period-label" id="period-label"></span>
+        <div class="view-tabs">
+          <button class="view-tab active" data-view="month">월간</button>
+          <button class="view-tab" data-view="week">주간</button>
+          <button class="view-tab" data-view="list">목록</button>
+        </div>
+        <button class="compact-btn" id="compact-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+          간단
+        </button>
+        <div class="hd-stats">
+          <div class="hd-stat"><span class="hd-stat-n ac" id="stat-td">—</span><span class="hd-stat-l">오늘</span></div>
+          <div class="hd-stat"><span class="hd-stat-n" id="stat-mo">—</span><span class="hd-stat-l">이번달</span></div>
+          <div class="hd-stat"><span class="hd-stat-n" id="stat-ex">—</span><span class="hd-stat-l">시험</span></div>
+        </div>
+      </div>
+      <div class="prog-strip"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
 
-        <!-- SION 히어로 -->
-        <div class="sion-hero">
-          <div class="sion-avatar">SI</div>
-          <div class="sion-hero-text">
-            <div class="sion-hero-label">AI Assistant</div>
-            <div class="sion-hero-title" id="hero-greeting">안녕하세요</div>
-            <div class="sion-hero-sub">SION이 준비되어 있습니다. AI 기능은 다음 업데이트에서 활성화됩니다.</div>
-            <div class="sion-status" style="margin-top:10px">
-              <div class="sion-status-dot"></div>
-              <span>시스템 정상 · Supabase 연결됨</span>
+      <!-- 3단 -->
+      <div class="sched-body">
+        <!-- 왼쪽 -->
+        <div class="panel-left">
+          <div class="search-box">
+            <input class="input" type="text" id="left-search" placeholder="검색..."/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </div>
+          <div>
+            <div class="sec-title">완료 여부</div>
+            <div class="done-seg">
+              <button class="done-seg-btn active" data-end="all">전체</button>
+              <button class="done-seg-btn" data-end="todo">미완료</button>
+              <button class="done-seg-btn" data-end="done">완료</button>
             </div>
           </div>
-          <div class="sion-upcoming" id="hero-upcoming">
-            <div class="sion-upcoming-label">오늘 남은 일정</div>
-            <div id="hero-upcoming-list" style="font-size:0.8rem;color:var(--tx-3)">불러오는 중...</div>
-          </div>
-        </div>
-
-        <!-- 통계 -->
-        <div class="stat-row">
-          <a href="schedule.html" class="stat-card accent">
-            <div class="stat-label">오늘 일정</div>
-            <div class="stat-num" id="stat-today">—</div>
-            <div class="stat-sub">개 항목</div>
-          </a>
-          <a href="schedule.html" class="stat-card">
-            <div class="stat-label">완료</div>
-            <div class="stat-num" id="stat-done">—</div>
-            <div class="stat-sub">개 완료됨</div>
-          </a>
-          <a href="schedule.html" class="stat-card">
-            <div class="stat-label">다가오는 시험</div>
-            <div class="stat-num" id="stat-exam">—</div>
-            <div class="stat-sub">일 후</div>
-          </a>
-          <a href="vault.html" class="stat-card">
-            <div class="stat-label">자료</div>
-            <div class="stat-num" id="stat-vault">—</div>
-            <div class="stat-sub">개 항목</div>
-          </a>
-        </div>
-
-        <!-- 오늘의 일정 -->
-        <div class="card span2">
-          <div class="card-header">
-            <span class="card-title">오늘의 일정</span>
-            <a href="schedule.html" class="btn btn-ghost btn-sm">전체보기</a>
-          </div>
-          <div class="today-list" id="today-list">
-            <div class="skeleton" style="height:38px"></div>
-            <div class="skeleton" style="height:38px"></div>
-            <div class="skeleton" style="height:38px"></div>
-          </div>
-        </div>
-
-        <!-- 다가오는 시험 -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">시험 D-day</span>
-            <a href="schedule.html?cat=시험" class="btn btn-ghost btn-sm">시험 목록</a>
-          </div>
-          <div class="exam-list" id="exam-list">
-            <div class="skeleton" style="height:38px"></div>
-            <div class="skeleton" style="height:38px"></div>
-          </div>
-        </div>
-
-        <!-- 시스템 상태 -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">시스템</span>
-          </div>
-          <div id="sys-status">
-            <div class="sys-grid">
-              <div>
-                <div class="sys-item"><span class="sys-item-label">데이터베이스</span><span class="sys-item-val" id="sys-db">확인중</span></div>
-                <div class="sys-item"><span class="sys-item-label">AI 엔진</span><span class="sys-item-val" style="color:var(--tx-3)">비활성</span></div>
-              </div>
-              <div>
-                <div class="sys-item"><span class="sys-item-label">스케쥴</span><span class="sys-item-val" id="sys-sched">—</span></div>
-                <div class="sys-item"><span class="sys-item-label">자료</span><span class="sys-item-val" id="sys-vault">—</span></div>
-              </div>
+          <div>
+            <div class="sec-title">카테고리</div>
+            <div class="cat-rows" id="cat-rows">
+              <div class="cat-row active" data-cat=""><span style="font-size:0.85rem">📋</span> 전체<span class="cat-n" id="cn-all">0</span></div>
+              <div class="cat-row" data-cat="과제"><span class="cat-dot" style="background:#60a5fa"></span>과제<span class="cat-n" id="cn-과제">0</span></div>
+              <div class="cat-row" data-cat="수행"><span class="cat-dot" style="background:#a78bfa"></span>수행<span class="cat-n" id="cn-수행">0</span></div>
+              <div class="cat-row" data-cat="시험"><span class="cat-dot" style="background:#f87171"></span>시험<span class="cat-n" id="cn-시험">0</span></div>
+              <div class="cat-row" data-cat="약속"><span class="cat-dot" style="background:#34d399"></span>약속<span class="cat-n" id="cn-약속">0</span></div>
+              <div class="cat-row" data-cat="기타"><span class="cat-dot" style="background:#475569"></span>기타<span class="cat-n" id="cn-기타">0</span></div>
             </div>
           </div>
-        </div>
-
-        <!-- 최근 자료 -->
-        <div class="card span2">
-          <div class="card-header">
-            <span class="card-title">최근 자료</span>
-            <a href="vault.html" class="btn btn-ghost btn-sm">자료보관함</a>
-          </div>
-          <div id="recent-vault-list">
-            <div class="skeleton" style="height:38px;margin-bottom:6px"></div>
-            <div class="skeleton" style="height:38px;margin-bottom:6px"></div>
-            <div class="skeleton" style="height:38px"></div>
+          <div>
+            <div class="sec-title">7일 내 미완료</div>
+            <div id="upcoming-left" style="display:flex;flex-direction:column;gap:2px"></div>
           </div>
         </div>
 
-      </div><!-- /.dash-grid -->
-    </div><!-- /.page -->
-  </div><!-- /.content -->
-</div><!-- /.app -->
+        <!-- 중앙 -->
+        <div class="panel-center" id="panel-center"></div>
+
+        <!-- 오른쪽 -->
+        <div class="panel-right">
+          <div class="rh">
+            <div style="display:flex;align-items:flex-end;gap:10px">
+              <div class="rh-date-n" id="rh-date-n">—</div>
+              <div id="rh-dday" style="display:none" class="rh-dday"></div>
+            </div>
+            <div class="rh-meta" id="rh-meta"></div>
+          </div>
+          <div class="rb" id="rb"></div>
+          <div class="inline-form" id="inline-form">
+            <input class="input" type="text" id="if-name" placeholder="일정 제목 *" style="font-size:0.85rem"/>
+            <div class="if-row">
+              <select class="input" id="if-cat" style="font-size:0.82rem">
+                <option value="">카테고리</option>
+                <option value="과제">과제</option>
+                <option value="수행">수행평가</option>
+                <option value="시험">시험</option>
+                <option value="약속">약속</option>
+                <option value="기타">기타</option>
+              </select>
+              <input class="input" type="time" id="if-time" style="font-size:0.82rem"/>
+            </div>
+            <div style="display:flex;gap:5px">
+              <button class="btn btn-ghost btn-sm" id="if-detail">상세</button>
+              <button class="btn btn-ghost btn-sm" id="if-cancel">취소</button>
+              <button class="btn btn-primary btn-sm" id="if-save" style="margin-left:auto">추가</button>
+            </div>
+          </div>
+          <div class="rf">
+            <button class="add-btn" id="right-add-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              이 날 일정 추가
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 수정 모달 -->
+<div class="modal-backdrop" id="modal-sched">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-title">일정 추가</span>
+      <button class="btn-icon" onclick="SION.ui.closeModal('modal-sched')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="form-id"/>
+      <div class="form-group">
+        <label class="input-label">제목 *</label>
+        <input class="input" type="text" id="form-name" placeholder="일정 제목"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="input-label">카테고리</label>
+          <select class="input" id="form-cat">
+            <option value="">선택 없음</option>
+            <option value="과제">과제</option>
+            <option value="수행">수행평가</option>
+            <option value="시험">시험</option>
+            <option value="약속">약속</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">날짜/시간</label>
+          <input class="input" type="datetime-local" id="form-date"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="input-label">키워드 (Enter로 추가)</label>
+        <input class="input" type="text" id="form-kw-input" placeholder="키워드 입력 후 Enter"/>
+        <div class="tag-list" id="form-kw-tags" style="margin-top:6px"></div>
+      </div>
+      <div class="form-group">
+        <label class="input-label">상세 내용</label>
+        <textarea class="input" id="form-content" rows="3" placeholder="내용"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="input-label">추가 정보</label>
+        <input class="input" type="text" id="form-add" placeholder="링크, 장소 등"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-danger btn-sm" id="form-del" style="margin-right:auto;display:none">삭제</button>
+      <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-sched')">취소</button>
+      <button class="btn btn-primary" id="form-save">저장</button>
+    </div>
+  </div>
+</div>
 
 <div id="toast-container"></div>
-
 <script src="sion.js"></script>
 <script>
-(async () => {
-  SION.ui.initSidebar();
+SION.ui.initSidebar();
+const PAD = SION.util.pad;
+const CAT_COL = { 과제:'#60a5fa', 수행:'#a78bfa', 시험:'#f87171', 약속:'#34d399', 기타:'#475569' };
+const DAYS = ['일','월','화','수','목','금','토'];
 
-  // 날짜 표시
-  const now = new Date();
-  const days = ['일','월','화','수','목','금','토'];
-  document.getElementById('topbar-date').textContent =
-    `${now.getFullYear()}.${SION.util.pad(now.getMonth()+1)}.${SION.util.pad(now.getDate())} ${days[now.getDay()]}`;
+const S = {
+  view: 'month', compact: false,
+  sel: SION.date.toDate(),
+  yr: new Date().getFullYear(), mo: new Date().getMonth()+1,
+  fCat: '', fEnd: 'all', fQ: '',
+  data: {},   // date→items[]
+  fKw: [],
+};
 
-  // 인사말
-  const h = now.getHours();
-  const greet = h < 6 ? '늦은 밤이네요' : h < 12 ? '좋은 아침이에요' : h < 18 ? '안녕하세요' : '좋은 저녁이에요';
-  document.getElementById('hero-greeting').textContent = greet;
+// ── 초기화 ───────────────────────────────────
+(async()=>{
+  setPeriod();
+  await loadData();
+  renderCenter(); renderRight(); renderLeftStats(); loadUpcoming();
+  initControls();
+})();
 
-  const todayStart = new Date(now); todayStart.setHours(0,0,0,0);
-  const todayEnd   = new Date(now); todayEnd.setHours(23,59,59,999);
+// ── 데이터 ───────────────────────────────────
+async function loadData(){
+  const s=new Date(S.yr,S.mo-1,1); s.setDate(s.getDate()-7); s.setHours(0,0,0,0);
+  const e=new Date(S.yr,S.mo,0);   e.setDate(e.getDate()+7); e.setHours(23,59,59,999);
+  try{
+    const rows=await SION.db.select('schedule',
+      `s_date=gte.${SION.date.toISO(s)}&s_date=lte.${SION.date.toISO(e)}&order=s_date.asc&limit=500`);
+    S.data={};
+    rows.forEach(r=>{
+      const k=SION.date.toDate(new Date(r.s_date));
+      (S.data[k]||(S.data[k]=[])).push(r);
+    });
+    updateStats();
+  }catch(e){ SION.ui.toast('로드 실패','error'); }
+}
 
-  // ── 오늘 일정 ─────────────────────────────
-  try {
-    const data = await SION.db.select('schedule',
-      `s_date=gte.${SION.date.toISO(todayStart)}&s_date=lte.${SION.date.toISO(todayEnd)}&order=s_date.asc&limit=8`
-    );
-    const done = data.filter(d => d.s_end === true).length;
-    document.getElementById('stat-today').textContent = data.length;
-    document.getElementById('stat-done').textContent  = done;
-    document.getElementById('sys-sched').textContent  = `${data.length}건`;
-    document.getElementById('sys-db').textContent     = '정상';
-    document.getElementById('sys-db').className       = 'sys-item-val ok';
+async function loadUpcoming(){
+  const n=new Date(); n.setHours(0,0,0,0);
+  const e=new Date(n); e.setDate(e.getDate()+7); e.setHours(23,59,59,999);
+  try{
+    const rows=await SION.db.select('schedule',
+      `s_end=eq.false&s_date=gte.${SION.date.toISO(n)}&s_date=lte.${SION.date.toISO(e)}&order=s_date.asc&limit=10`);
+    const el=document.getElementById('upcoming-left');
+    if(!rows.length){el.innerHTML='<div style="font-size:0.74rem;color:var(--tx-4);padding:4px 0">없음</div>';return;}
+    el.innerHTML=rows.map(r=>{
+      const ds=SION.date.toDate(new Date(r.s_date));
+      const dd=SION.date.dday(ds);
+      const cls=dd.cls==='today'?'t':dd.cls==='soon'?'s':'n';
+      return`<div class="up-item" data-date="${ds}">
+        <span class="up-dd ${cls}">${dd.label}</span>
+        <span class="up-name">${SION.util.esc(r.s_name)}</span>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('[data-date]').forEach(el2=>{
+      el2.addEventListener('click',()=>selectDate(el2.dataset.date));
+    });
+  }catch(e){}
+}
 
-    const list = document.getElementById('today-list');
-    if (data.length === 0) {
-      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📋</div><div class="empty-state-text">오늘 일정이 없습니다</div></div>`;
-    } else {
-      list.innerHTML = data.map(item => `
-        <div class="today-item ${item.s_end ? 'done' : ''}" data-id="${item.id}">
-          <div class="today-check ${item.s_end ? 'done' : ''}" data-id="${item.id}">
-            ${item.s_end ? '<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' : ''}
-          </div>
-          <span class="today-name">${SION.util.esc(item.s_name)}</span>
-          <span>${SION.ui.catBadge(item.s_category)}</span>
-          <span class="today-time">${SION.date.fmtDateTime(item.s_date)}</span>
-        </div>
-      `).join('');
+function updateStats(){
+  // 오늘
+  const tStr=SION.date.toDate();
+  const tItems=S.data[tStr]||[];
+  document.getElementById('stat-td').textContent=tItems.filter(i=>!i.s_end).length;
+  // 이번달
+  let mo=0;
+  Object.entries(S.data).forEach(([k,arr])=>{
+    const[y,m]=k.split('-').map(Number);
+    if(y===S.yr&&m===S.mo) mo+=arr.length;
+  });
+  document.getElementById('stat-mo').textContent=mo;
+  // 시험
+  const now=new Date(); now.setHours(0,0,0,0);
+  let near=null;
+  Object.values(S.data).flat().forEach(r=>{
+    if(r.s_category==='시험'&&!r.s_end){
+      const d=new Date(r.s_date);
+      if(d>=now&&(!near||d<new Date(near.s_date))) near=r;
+    }
+  });
+  if(near){
+    const diff=Math.round((new Date(near.s_date)-now)/86400000);
+    document.getElementById('stat-ex').textContent=`D-${diff}`;
+  }else document.getElementById('stat-ex').textContent='—';
+  // 오늘 진행률
+  const done=tItems.filter(i=>i.s_end).length;
+  const pct=tItems.length?Math.round(done/tItems.length*100):0;
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
 
-      list.querySelectorAll('.today-check').forEach(btn => {
-        btn.addEventListener('click', async e => {
-          e.stopPropagation();
-          const id = btn.dataset.id;
-          const item = data.find(d => String(d.id) === id);
-          if (!item) return;
-          try {
-            await SION.db.update('schedule', `id=eq.${id}`, { s_end: !item.s_end });
-            item.s_end = !item.s_end;
-            btn.closest('.today-item').classList.toggle('done', item.s_end);
-            btn.classList.toggle('done', item.s_end);
-            btn.innerHTML = item.s_end ? '<svg width="10" height="10" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>' : '';
-            SION.ui.toast(item.s_end ? '완료 처리됨' : '미완료로 변경됨', 'success');
-          } catch(e) { SION.ui.toast('오류: ' + e.message, 'error'); }
-        });
-      });
+function renderLeftStats(){
+  const cnt={all:0,과제:0,수행:0,시험:0,약속:0,기타:0};
+  Object.entries(S.data).forEach(([k,arr])=>{
+    const[y,m]=k.split('-').map(Number);
+    if(y!==S.yr||m!==S.mo) return;
+    arr.forEach(r=>{ cnt.all++; const c=r.s_category||'기타'; if(cnt[c]!==undefined)cnt[c]++;else cnt['기타']++; });
+  });
+  ['all','과제','수행','시험','약속','기타'].forEach(k=>{
+    const el=document.getElementById(`cn-${k}`); if(el) el.textContent=cnt[k]||0;
+  });
+}
+
+function setPeriod(){
+  const p=document.getElementById('period-label');
+  if(S.view==='month') p.textContent=`${S.yr}.${PAD(S.mo)}`;
+  else if(S.view==='week'){
+    const ws=weekStart(S.sel); const we=new Date(ws); we.setDate(we.getDate()+6);
+    p.textContent=`${ws.getMonth()+1}/${ws.getDate()} — ${we.getMonth()+1}/${we.getDate()}`;
+  } else p.textContent=`${S.yr}.${PAD(S.mo)} 목록`;
+}
+
+function weekStart(ds){
+  const d=SION.date.parseDate(ds); d.setDate(d.getDate()-d.getDay()); return d;
+}
+
+// ── 중앙 렌더링 ───────────────────────────────
+function renderCenter(){
+  const el=document.getElementById('panel-center');
+  if(S.view==='month') renderMonth(el);
+  else if(S.view==='week') renderWeek(el);
+  else renderList(el);
+}
+
+function getFiltered(ds){
+  let items=S.data[ds]||[];
+  if(S.fCat) items=items.filter(i=>i.s_category===S.fCat);
+  if(S.fEnd==='todo') items=items.filter(i=>!i.s_end);
+  if(S.fEnd==='done') items=items.filter(i=>i.s_end);
+  if(S.fQ){const q=S.fQ.toLowerCase();items=items.filter(i=>i.s_name?.toLowerCase().includes(q)||i.s_content?.toLowerCase().includes(q)||i.s_keywords?.some(k=>k.toLowerCase().includes(q)));}
+  return items;
+}
+
+// 가장 가까운 시험
+function nearExamDate(){
+  const now=new Date(); now.setHours(0,0,0,0);
+  let near=null;
+  Object.values(S.data).flat().forEach(r=>{
+    if(r.s_category==='시험'&&!r.s_end){
+      const d=new Date(r.s_date);
+      if(d>=now&&(!near||d<new Date(near.s_date))) near=r;
+    }
+  });
+  return near? SION.date.toDate(new Date(near.s_date)):null;
+}
+
+function renderMonth(el){
+  const first=new Date(S.yr,S.mo-1,1).getDay();
+  const last=new Date(S.yr,S.mo,0).getDate();
+  const prevLast=new Date(S.yr,S.mo-1,0).getDate();
+  const today=SION.date.toDate();
+  const examDs=nearExamDate();
+  let cells='';
+
+  const buildCell=(ds,n,other)=>{
+    const dow=SION.date.parseDate(ds).getDay();
+    const items=getFiltered(ds);
+    const all=S.data[ds]||[];
+    let cls='cal-cell';
+    if(other) cls+=' other';
+    if(ds===today) cls+=' today';
+    if(ds===S.sel) cls+=' selected';
+    if(dow===0) cls+=' sun';
+    if(dow===6) cls+=' sat';
+
+    let ddBadge='';
+    if(examDs===ds) ddBadge='<div class="cal-dday-badge">D-Day</div>';
+    else if(examDs){
+      const diff=Math.round((SION.date.parseDate(examDs)-SION.date.parseDate(ds))/86400000);
+      if(diff>0&&diff<=14) ddBadge=`<div class="cal-dday-badge">D-${diff}</div>`;
     }
 
-    // 히어로 남은 일정
-    const remaining = data.filter(d => !d.s_end);
-    const heroList = document.getElementById('hero-upcoming-list');
-    if (remaining.length === 0) {
-      heroList.innerHTML = '<span style="color:var(--ac)">모두 완료! 🎉</span>';
-    } else {
-      heroList.innerHTML = remaining.slice(0,3).map(i =>
-        `<div style="display:flex;align-items:center;gap:6px;padding:3px 0">
-          <div style="width:4px;height:4px;border-radius:50%;background:var(--ac);flex-shrink:0"></div>
-          <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-1);font-size:0.8rem">${SION.util.esc(i.s_name)}</span>
-        </div>`
-      ).join('') + (remaining.length > 3 ? `<div style="color:var(--tx-3);font-size:0.72rem;margin-top:4px">+${remaining.length-3}개 더</div>` : '');
-    }
+    const MAX=S.compact?0:3;
+    const shown=items.slice(0,MAX);
+    const more=items.length-MAX;
+    const chips=shown.map(r=>`<div class="cchip cat-${r.s_category||'기타'} ${r.s_end?'done':''}">${SION.util.esc(r.s_name)}</div>`).join('');
+    const moreH=more>0?`<div class="cmore">+${more}</div>`:'';
+    const dots=all.slice(0,5).map(r=>`<div class="cdot" style="background:${CAT_COL[r.s_category]||'#475569'};opacity:${r.s_end?.3:1}"></div>`).join('');
 
-  } catch(e) {
-    document.getElementById('sys-db').textContent = '오류';
-    document.getElementById('sys-db').className   = 'sys-item-val err';
-    document.getElementById('today-list').innerHTML = `<div class="empty-state"><div class="empty-state-text">데이터를 불러올 수 없습니다</div><div class="empty-state-sub">${SION.util.esc(e.message)}</div></div>`;
+    return`<div class="${cls}" data-date="${ds}">
+      <span class="cdn">${n}</span>
+      ${ddBadge}
+      <div class="cal-chips">${chips}${moreH}</div>
+      <div class="dot-row">${dots}</div>
+    </div>`;
+  };
+
+  for(let i=first-1;i>=0;i--){
+    const d=prevLast-i, m=S.calMonth-1||12, y=S.mo===1?S.yr-1:S.yr;
+    cells+=buildCell(`${y}-${PAD(m)}-${PAD(d)}`,d,true);
+  }
+  for(let d=1;d<=last;d++) cells+=buildCell(`${S.yr}-${PAD(S.mo)}-${PAD(d)}`,d,false);
+  const total=first+last; const rows=Math.ceil(total/7); let nd=1;
+  for(let i=total;i<rows*7;i++){
+    const m=S.mo%12+1, y=S.mo===12?S.yr+1:S.yr;
+    cells+=buildCell(`${y}-${PAD(m)}-${PAD(nd)}`,nd++,true);
   }
 
-  // ── 시험 D-day ────────────────────────────
-  try {
-    const exams = await SION.db.select('schedule',
-      `s_category=eq.시험&s_end=eq.false&s_date=gte.${SION.date.toISO(todayStart)}&order=s_date.asc&limit=4`
-    );
+  el.innerHTML=`<div class="cal-wrap">
+    <div class="cal-dow-row">
+      <div class="cal-dow sun">일</div><div class="cal-dow">월</div><div class="cal-dow">화</div>
+      <div class="cal-dow">수</div><div class="cal-dow">목</div><div class="cal-dow">금</div><div class="cal-dow sat">토</div>
+    </div>
+    <div class="cal-grid${S.compact?' compact':''}" id="cal-grid">${cells}</div>
+  </div>`;
 
-    if (exams.length > 0) {
-      const days_left = Math.round((new Date(exams[0].s_date) - now) / 86400000);
-      document.getElementById('stat-exam').textContent = Math.max(0, days_left);
-    } else {
-      document.getElementById('stat-exam').textContent = '—';
-    }
+  el.querySelectorAll('.cal-cell[data-date]').forEach(c=>{
+    c.addEventListener('click',()=>selectDate(c.dataset.date));
+  });
+}
 
-    const examList = document.getElementById('exam-list');
-    if (exams.length === 0) {
-      examList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">예정된 시험이 없습니다</div></div>`;
-    } else {
-      examList.innerHTML = exams.map(item => {
-        const ds = SION.date.toDate(new Date(item.s_date));
-        const dd = SION.date.dday(ds);
-        return `
-          <div class="exam-item">
-            <span class="exam-dday ${dd.cls}">${dd.label}</span>
-            <span class="exam-name">${SION.util.esc(item.s_name)}</span>
-            <span class="exam-date">${SION.date.fmtDate(item.s_date)}</span>
-          </div>`;
+function renderWeek(el){
+  const ws=weekStart(S.sel);
+  const today=SION.date.toDate();
+  const hrs=Array.from({length:24},(_,i)=>i);
+
+  let hdr='<div class="wh-cell"></div>';
+  for(let i=0;i<7;i++){
+    const d=new Date(ws); d.setDate(d.getDate()+i);
+    const ds=SION.date.toDate(d); const isT=ds===today;
+    hdr+=`<div class="wh-cell border-l ${isT?'today-col':''}" data-date="${ds}">
+      <div style="font-size:0.6rem">${DAYS[d.getDay()]}</div>
+      <div style="font-size:0.95rem;font-weight:700;font-family:var(--font-mono)">${d.getDate()}</div>
+    </div>`;
+  }
+
+  let body='';
+  hrs.forEach(h=>{
+    let row=`<div class="wt-cell">${h}:00</div>`;
+    for(let i=0;i<7;i++){
+      const d=new Date(ws); d.setDate(d.getDate()+i);
+      const ds=SION.date.toDate(d);
+      const evs=(S.data[ds]||[]).filter(r=>r.s_date&&new Date(r.s_date).getHours()===h);
+      const evsHtml=evs.map(r=>{
+        const col=CAT_COL[r.s_category]||'#475569';
+        return`<div class="wev" style="background:${col}20;color:${col};border-left:2px solid ${col}"
+          onclick="selectDate('${ds}')">${SION.util.esc(r.s_name)}</div>`;
       }).join('');
+      row+=`<div class="ws-cell" data-date="${ds}" data-hour="${h}">${evsHtml}</div>`;
     }
-  } catch(e) { document.getElementById('exam-list').innerHTML = ''; }
+    body+=`<div style="display:contents">${row}</div>`;
+  });
 
-  // ── 자료보관함 ────────────────────────────
-  try {
-    const vaults = await SION.db.select('vault', 'order=updated_at.desc&limit=3');
-    document.getElementById('stat-vault').textContent = vaults.length;
-    document.getElementById('sys-vault').textContent  = `${vaults.length}건`;
+  el.innerHTML=`<div class="week-view">
+    <div class="week-grid" style="grid-template-rows:auto${'44px '.repeat(24).trim()}">
+      <div style="display:contents">${hdr}</div>${body}
+    </div>
+  </div>`;
+  el.querySelectorAll('[data-date]').forEach(c=>{
+    c.addEventListener('click',e=>{if(!e.target.closest('.wev'))selectDate(c.dataset.date);});
+  });
+  el.scrollTop=(new Date().getHours())*44-100;
+}
 
-    const rvList = document.getElementById('recent-vault-list');
-    if (vaults.length === 0) {
-      rvList.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📁</div><div class="empty-state-text">자료가 없습니다</div></div>`;
-    } else {
-      rvList.innerHTML = vaults.map(v => `
-        <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);background:var(--bg-float);margin-bottom:6px">
-          <span style="font-size:0.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx-1)">${SION.util.esc(v.v_title)}</span>
-          <span class="badge badge-기타" style="font-size:0.65rem">${SION.util.esc(v.v_category||'기타')}</span>
-          <span style="font-size:0.7rem;color:var(--tx-3);font-family:var(--font-mono)">${SION.date.fmtDate(v.updated_at)}</span>
-        </div>
-      `).join('');
+function renderList(el){
+  const today=SION.date.toDate();
+  const days=[];
+  for(let d=1;d<=new Date(S.yr,S.mo,0).getDate();d++){
+    const ds=`${S.yr}-${PAD(S.mo)}-${PAD(d)}`;
+    const items=getFiltered(ds);
+    if(items.length) days.push({ds,items});
+  }
+  if(!days.length){
+    el.innerHTML=`<div class="empty-state" style="padding:60px"><div class="empty-state-icon">📋</div><div class="empty-state-text">이번 달 일정이 없습니다</div></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="list-view">`+days.map(({ds,items})=>{
+    const d=SION.date.parseDate(ds); const isT=ds===today;
+    return`<div>
+      <div class="ld-label ${isT?'today':''}">
+        ${d.getMonth()+1}월 ${d.getDate()}일 (${DAYS[d.getDay()]})
+        ${isT?'<span style="font-size:0.58rem;background:var(--ac);color:var(--bg-base);padding:1px 5px;border-radius:8px;font-weight:700">오늘</span>':''}
+        <span class="ld-cnt">${items.length}건</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">${items.map(r=>buildRi(r)).join('')}</div>
+    </div>`;
+  }).join('')+`</div>`;
+  bindRiEvents(el);
+}
+
+// ── 오른쪽 패널 ───────────────────────────────
+function renderRight(){
+  const ds=S.sel;
+  const d=SION.date.parseDate(ds);
+  const now=new Date(); now.setHours(0,0,0,0);
+  const diff=Math.round((d-now)/86400000);
+
+  document.getElementById('rh-date-n').textContent=d.getDate();
+  document.getElementById('rh-meta').innerHTML=
+    `${d.getFullYear()}.${PAD(d.getMonth()+1)}.${PAD(d.getDate())} ${DAYS[d.getDay()]}요일
+    ${diff===0?'<span style="font-size:0.62rem;background:var(--ac);color:var(--bg-base);padding:1px 6px;border-radius:8px;font-weight:700;margin-left:4px">오늘</span>':
+    diff>0?`<span style="font-size:0.68rem;color:var(--tx-3);margin-left:4px">${diff}일 후</span>`:
+    `<span style="font-size:0.68rem;color:var(--tx-3);margin-left:4px">${Math.abs(diff)}일 전</span>`}`;
+
+  const items=S.data[ds]||[];
+  const exams=items.filter(i=>i.s_category==='시험'&&!i.s_end);
+  const ddEl=document.getElementById('rh-dday');
+  if(exams.length){ const dd=SION.date.dday(ds); ddEl.textContent=dd.label; ddEl.style.display=''; }
+  else ddEl.style.display='none';
+
+  const filtered=getFiltered(ds);
+  const rb=document.getElementById('rb');
+  if(!filtered.length){
+    rb.innerHTML=`<div class="rb-empty"><div style="font-size:1.6rem;opacity:0.25">📅</div>
+      <div style="font-size:0.8rem">${diff===0?'오늘은':diff>0?`${diff}일 후는`:`${Math.abs(diff)}일 전은`} 일정이 없습니다</div></div>`;
+    return;
+  }
+  rb.innerHTML=filtered.map(r=>buildRi(r)).join('');
+  bindRiEvents(rb);
+}
+
+function buildRi(r){
+  const cat=r.s_category||'기타';
+  return`<div class="ri ${r.s_end?'done':''}" data-id="${r.id}">
+    <div class="ri-bar cat-${cat}"></div>
+    <div class="ri-chk ${r.s_end?'done':''}" data-id="${r.id}">
+      ${r.s_end?`<svg width="9" height="9" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`:''}
+    </div>
+    <div class="ri-bd">
+      <div class="ri-name">${SION.util.esc(r.s_name)}</div>
+      <div class="ri-meta">
+        ${r.s_date?`<span class="ri-time">${SION.date.fmtDateTime(r.s_date)}</span>`:''}
+        ${SION.ui.catBadge(cat)}
+        ${r.s_keywords?.length?`<div class="ri-kws">${r.s_keywords.slice(0,3).map(k=>`<span class="ri-kw">${SION.util.esc(k)}</span>`).join('')}</div>`:''}
+      </div>
+      ${r.s_content?`<div class="ri-prev">${SION.util.esc(r.s_content)}</div>`:''}
+    </div>
+    <div class="ri-acts">
+      <button class="btn-icon btn-sm edit-btn" data-id="${r.id}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="btn-icon btn-sm del-btn" data-id="${r.id}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function bindRiEvents(el){
+  el.querySelectorAll('.ri-chk').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();toggleDone(b.dataset.id);}));
+  el.querySelectorAll('.edit-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();openEdit(b.dataset.id);}));
+  el.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();del(b.dataset.id);}));
+}
+
+// ── 날짜 선택 ─────────────────────────────────
+function selectDate(ds){
+  S.sel=ds;
+  const[y,m]=ds.split('-').map(Number);
+  if(S.view==='month'&&(y!==S.yr||m!==S.mo)){
+    S.yr=y; S.mo=m; setPeriod();
+    loadData().then(()=>{renderCenter();renderRight();renderLeftStats();});
+    return;
+  }
+  document.querySelectorAll('.cal-cell.selected').forEach(c=>c.classList.remove('selected'));
+  document.querySelector(`.cal-cell[data-date="${ds}"]`)?.classList.add('selected');
+  renderRight();
+  hideInlineForm();
+}
+
+// ── 내비 ─────────────────────────────────────
+function nav(dir){
+  if(S.view==='week'){
+    const d=SION.date.parseDate(S.sel); d.setDate(d.getDate()+dir*7);
+    S.sel=SION.date.toDate(d);
+    const[y,m]=S.sel.split('-').map(Number); S.yr=y; S.mo=m;
+  }else{
+    S.mo+=dir;
+    if(S.mo>12){S.mo=1;S.yr++;}
+    if(S.mo<1){S.mo=12;S.yr--;}
+  }
+  setPeriod();
+  loadData().then(()=>{renderCenter();renderRight();renderLeftStats();});
+}
+
+// ── CRUD ─────────────────────────────────────
+async function toggleDone(id){
+  let item=null; for(const arr of Object.values(S.data)){item=arr.find(r=>String(r.id)===String(id));if(item)break;}
+  if(!item) return;
+  try{
+    await SION.db.update('schedule',`id=eq.${id}`,{s_end:!item.s_end});
+    item.s_end=!item.s_end;
+    SION.ui.toast(item.s_end?'완료':'미완료로 변경','success');
+    renderCenter(); renderRight(); updateStats(); loadUpcoming();
+  }catch(e){SION.ui.toast('오류: '+e.message,'error');}
+}
+
+async function del(id){
+  if(!confirm('삭제하시겠습니까?')) return;
+  try{
+    await SION.db.remove('schedule',`id=eq.${id}`);
+    for(const[k,arr] of Object.entries(S.data)){
+      const i=arr.findIndex(r=>String(r.id)===String(id));
+      if(i!==-1){arr.splice(i,1);break;}
     }
-  } catch(e) {}
+    SION.ui.toast('삭제됨','success');
+    SION.ui.closeModal('modal-sched');
+    renderCenter(); renderRight(); updateStats(); renderLeftStats(); loadUpcoming();
+  }catch(e){SION.ui.toast('삭제 실패','error');}
+}
 
-  // ── 전체 자료 수 재요청 ───────────────────
-  try {
-    const resp = await fetch(`https://cszwasbxeczeocmdifqj.supabase.co/rest/v1/vault?select=id`, {
-      headers: { 'apikey': 'sb_publishable_oyd1ya6arSUwFLhHxC4ixQ_BNJ9WpVn', 'Prefer': 'count=exact' }
-    });
-    const count = resp.headers.get('content-range')?.split('/')[1];
-    if (count) document.getElementById('stat-vault').textContent = count;
-  } catch(e) {}
+// ── 인라인 폼 ─────────────────────────────────
+function showInlineForm(){
+  document.getElementById('inline-form').classList.add('open');
+  document.getElementById('right-add-btn').style.display='none';
+  const n=new Date(); n.setHours(n.getHours()+1,0,0,0);
+  document.getElementById('if-time').value=`${PAD(n.getHours())}:00`;
+  document.getElementById('if-name').focus();
+}
+function hideInlineForm(){
+  document.getElementById('inline-form').classList.remove('open');
+  document.getElementById('right-add-btn').style.display='';
+}
+async function saveInline(){
+  const name=document.getElementById('if-name').value.trim();
+  if(!name){SION.ui.toast('제목을 입력하세요','error');return;}
+  const cat=document.getElementById('if-cat').value;
+  const time=document.getElementById('if-time').value;
+  const dt=new Date(`${S.sel}T${time||'09:00'}:00`);
+  const btn=document.getElementById('if-save'); btn.disabled=true;
+  try{
+    const res=await SION.db.insert('schedule',{s_name:name,s_date:dt.toISOString(),s_category:cat||null,s_end:false});
+    const item=Array.isArray(res)?res[0]:res;
+    if(item){(S.data[S.sel]||(S.data[S.sel]=[])).push(item); S.data[S.sel].sort((a,b)=>new Date(a.s_date)-new Date(b.s_date));}
+    SION.ui.toast('추가됨','success');
+    document.getElementById('if-name').value='';
+    renderCenter(); renderRight(); updateStats(); renderLeftStats(); loadUpcoming();
+  }catch(e){SION.ui.toast('추가 실패','error');}
+  finally{btn.disabled=false;}
+}
 
-  // 스케쥴 뱃지
-  try {
-    const today = await SION.db.select('schedule',
-      `s_date=gte.${SION.date.toISO(todayStart)}&s_date=lte.${SION.date.toISO(todayEnd)}&s_end=eq.false`
-    );
-    const nb = document.getElementById('nb-schedule');
-    if (nb) nb.textContent = today.length;
-  } catch(e) {}
+// ── 수정 모달 ─────────────────────────────────
+function openAdd(){
+  S.fKw=[];
+  ['form-id','form-name','form-content','form-add'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('form-cat').value='';
+  document.getElementById('form-date').value=`${S.sel}T09:00`;
+  document.getElementById('form-del').style.display='none';
+  renderFKw(); document.getElementById('modal-title').textContent='일정 추가';
+  SION.ui.openModal('modal-sched');
+  setTimeout(()=>document.getElementById('form-name').focus(),80);
+}
+function openEdit(id){
+  let item=null; for(const arr of Object.values(S.data)){item=arr.find(r=>String(r.id)===String(id));if(item)break;}
+  if(!item) return;
+  S.fKw=Array.isArray(item.s_keywords)?[...item.s_keywords]:[];
+  document.getElementById('form-id').value=item.id;
+  document.getElementById('form-name').value=item.s_name||'';
+  document.getElementById('form-cat').value=item.s_category||'';
+  document.getElementById('form-date').value=SION.date.toDatetimeLocal(item.s_date);
+  document.getElementById('form-content').value=item.s_content||'';
+  document.getElementById('form-add').value=item.s_add||'';
+  document.getElementById('form-del').style.display=''; document.getElementById('form-del').dataset.id=id;
+  renderFKw(); document.getElementById('modal-title').textContent='일정 수정';
+  SION.ui.openModal('modal-sched');
+}
+function renderFKw(){
+  document.getElementById('form-kw-tags').innerHTML=S.fKw.map((k,i)=>
+    `<span class="tag">${SION.util.esc(k)}<span class="tag-remove" data-i="${i}">✕</span></span>`).join('');
+  document.querySelectorAll('#form-kw-tags .tag-remove').forEach(b=>
+    b.addEventListener('click',()=>{S.fKw.splice(Number(b.dataset.i),1);renderFKw();}));
+}
+async function saveModal(){
+  const name=document.getElementById('form-name').value.trim();
+  if(!name){SION.ui.toast('제목을 입력하세요','error');return;}
+  const id=document.getElementById('form-id').value;
+  const dv=document.getElementById('form-date').value;
+  const body={
+    s_name:name, s_date:dv?new Date(dv).toISOString():null,
+    s_category:document.getElementById('form-cat').value||null,
+    s_keywords:S.fKw.length?S.fKw:null,
+    s_content:document.getElementById('form-content').value.trim()||null,
+    s_add:document.getElementById('form-add').value.trim()||null,
+  };
+  const btn=document.getElementById('form-save'); btn.disabled=true; btn.innerHTML=SION.ui.spinner(14)+' 저장중';
+  try{
+    if(id){
+      const res=await SION.db.update('schedule',`id=eq.${id}`,body);
+      const upd=Array.isArray(res)?res[0]:res;
+      for(const arr of Object.values(S.data)){const i=arr.findIndex(r=>String(r.id)===String(id));if(i!==-1){if(upd)arr[i]={...arr[i],...upd};break;}}
+      SION.ui.toast('수정됨','success');
+    }else{
+      body.s_end=false;
+      const res=await SION.db.insert('schedule',body);
+      const item=Array.isArray(res)?res[0]:res;
+      if(item){const ds=SION.date.toDate(new Date(item.s_date));(S.data[ds]||(S.data[ds]=[])).push(item);S.data[ds].sort((a,b)=>new Date(a.s_date)-new Date(b.s_date));}
+      SION.ui.toast('추가됨','success');
+    }
+    SION.ui.closeModal('modal-sched');
+    renderCenter(); renderRight(); updateStats(); renderLeftStats(); loadUpcoming();
+  }catch(e){SION.ui.toast('저장 실패','error');}
+  finally{btn.disabled=false;btn.textContent='저장';}
+}
 
-})();
+// ── 컨트롤 초기화 ─────────────────────────────
+function initControls(){
+  document.getElementById('nav-prev').addEventListener('click',()=>nav(-1));
+  document.getElementById('nav-next').addEventListener('click',()=>nav(1));
+  document.getElementById('nav-today').addEventListener('click',()=>{
+    const n=new Date(); S.yr=n.getFullYear(); S.mo=n.getMonth()+1; S.sel=SION.date.toDate();
+    setPeriod(); loadData().then(()=>{renderCenter();renderRight();renderLeftStats();});
+  });
+  document.querySelectorAll('.view-tab').forEach(t=>t.addEventListener('click',()=>{
+    document.querySelectorAll('.view-tab').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active'); S.view=t.dataset.view; setPeriod(); renderCenter();
+  }));
+  document.getElementById('compact-btn').addEventListener('click',function(){
+    S.compact=!S.compact; this.classList.toggle('on',S.compact); renderCenter();
+  });
+  document.getElementById('cat-rows').addEventListener('click',e=>{
+    const row=e.target.closest('[data-cat]'); if(!row) return;
+    document.querySelectorAll('#cat-rows [data-cat]').forEach(r=>r.classList.remove('active'));
+    row.classList.add('active'); S.fCat=row.dataset.cat; renderCenter(); renderRight();
+  });
+  document.querySelectorAll('[data-end]').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-end]').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); S.fEnd=b.dataset.end; renderCenter(); renderRight();
+  }));
+  document.getElementById('left-search').addEventListener('input',
+    SION.util.debounce(e=>{S.fQ=e.target.value.trim();renderCenter();renderRight();},250));
+  document.getElementById('btn-add-top').addEventListener('click',openAdd);
+  document.getElementById('right-add-btn').addEventListener('click',showInlineForm);
+  document.getElementById('if-cancel').addEventListener('click',hideInlineForm);
+  document.getElementById('if-save').addEventListener('click',saveInline);
+  document.getElementById('if-detail').addEventListener('click',()=>{hideInlineForm();openAdd();});
+  document.getElementById('if-name').addEventListener('keydown',e=>{if(e.key==='Enter')saveInline();});
+  document.getElementById('form-kw-input').addEventListener('keydown',e=>{
+    if(e.key==='Enter'||e.key===','){
+      e.preventDefault(); const v=e.target.value.trim().replace(/,$/,'');
+      if(v&&!S.fKw.includes(v)){S.fKw.push(v);renderFKw();} e.target.value='';
+    }
+  });
+  document.getElementById('form-save').addEventListener('click',saveModal);
+  document.getElementById('form-del').addEventListener('click',()=>{
+    const id=document.getElementById('form-del').dataset.id; if(id) del(id);
+  });
+}
 </script>
 </body>
 </html>
