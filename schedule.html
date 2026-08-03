@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>SION — 스케쥴</title>
+  <link rel="stylesheet" href="sion.css"/>
+  <style>
+    /* ── 스케쥴 전용 ─────────────────────── */
+    .sched-layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── 왼쪽 패널: 오늘/필터/통계 ─────── */
+    .sched-left { display: flex; flex-direction: column; gap: 14px; }
+
+    /* 필터 칩 */
+    .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      border: 1px solid var(--line-mid);
+      background: transparent;
+      color: var(--tx-2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip:hover { border-color: var(--line-hi); color: var(--tx-1); }
+    .chip.active { background: var(--ac-dim); border-color: var(--ac); color: var(--ac); }
+
+    /* 오늘 요약 */
+    .today-summary {
+      padding: 16px;
+      background: var(--bg-float);
+      border-radius: var(--radius);
+      border: 1px solid var(--line-mid);
+    }
+    .ts-date {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--tx-3);
+      margin-bottom: 8px;
+    }
+    .ts-progress-bar {
+      height: 4px;
+      background: var(--bg-overlay);
+      border-radius: 2px;
+      margin: 10px 0 6px;
+      overflow: hidden;
+    }
+    .ts-progress-fill {
+      height: 100%;
+      background: var(--ac);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+    .ts-counts {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+
+    /* 미니 캘린더 */
+    .mini-cal { }
+    .mini-cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .mini-cal-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+    }
+    .mini-cal-nav {
+      width: 26px; height: 26px;
+      border-radius: 6px;
+      border: 1px solid var(--line-mid);
+      background: transparent;
+      color: var(--tx-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.15s;
+    }
+    .mini-cal-nav:hover { background: var(--bg-overlay); color: var(--tx-1); }
+    .mini-cal-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      margin-bottom: 4px;
+    }
+    .mini-cal-day-label {
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--tx-3);
+      padding: 3px 0;
+      font-weight: 600;
+    }
+    .mini-cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .cal-cell {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      cursor: pointer;
+      color: var(--tx-2);
+      position: relative;
+      transition: background 0.1s, color 0.1s;
+    }
+    .cal-cell:hover { background: var(--bg-overlay); color: var(--tx-1); }
+    .cal-cell.other { color: var(--tx-4); }
+    .cal-cell.today { background: var(--ac-dim); color: var(--ac); font-weight: 700; }
+    .cal-cell.selected { background: var(--ac); color: var(--bg-base); font-weight: 700; }
+    .cal-cell.has-event::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      width: 4px; height: 4px;
+      border-radius: 50%;
+      background: var(--ac);
+    }
+    .cal-cell.today.has-event::after, .cal-cell.selected.has-event::after { background: var(--bg-base); }
+    .cal-cell.sun { color: var(--red); }
+    .cal-cell.sun.today, .cal-cell.sun.selected { color: inherit; }
+
+    /* ── 오른쪽: 일정 목록 ────────────────── */
+    .sched-right { display: flex; flex-direction: column; gap: 14px; }
+    .sched-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .sched-date-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--tx-1);
+      font-family: var(--font-mono);
+      flex: 1;
+    }
+
+    /* 일정 아이템 */
+    .sched-list { display: flex; flex-direction: column; gap: 6px; }
+    .sched-item {
+      background: var(--bg-raised);
+      border: 1px solid var(--line-mid);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: border-color 0.15s;
+    }
+    .sched-item:hover { border-color: var(--line-hi); }
+    .sched-item.done { opacity: 0.45; }
+    .sched-item.done .sched-name { text-decoration: line-through; color: var(--tx-3); }
+    .sched-check {
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--line-hi);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      margin-top: 1px;
+      transition: all 0.15s;
+    }
+    .sched-check:hover { border-color: var(--ac); }
+    .sched-check.done { background: var(--ac); border-color: var(--ac); }
+    .sched-body { flex: 1; min-width: 0; }
+    .sched-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--tx-1);
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .sched-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .sched-time {
+      font-size: 0.72rem;
+      color: var(--tx-3);
+      font-family: var(--font-mono);
+    }
+    .sched-keywords {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .sched-keyword {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      background: var(--bg-overlay);
+      color: var(--tx-3);
+    }
+    .sched-content-preview {
+      font-size: 0.78rem;
+      color: var(--tx-3);
+      margin-top: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .sched-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .sched-item:hover .sched-actions { opacity: 1; }
+
+    /* 상세 패널 (슬라이드) */
+    .detail-panel {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 360px;
+      background: var(--bg-float);
+      border-left: 1px solid var(--line-hi);
+      box-shadow: -8px 0 32px rgba(0,0,0,0.4);
+      z-index: 150;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.25s ease;
+      overflow-y: auto;
+    }
+    .detail-panel.open { transform: translateX(0); }
+    .detail-head {
+      padding: 20px;
+      border-bottom: 1px solid var(--line-sub);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .detail-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--tx-1);
+      line-height: 1.4;
+      flex: 1;
+    }
+    .detail-body { padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 14px; }
+    .detail-row { display: flex; flex-direction: column; gap: 4px; }
+    .detail-label { font-size: 0.65rem; font-weight: 600; color: var(--tx-3); text-transform: uppercase; letter-spacing: 0.1em; }
+    .detail-val { font-size: 0.85rem; color: var(--tx-1); }
+    .detail-content { font-size: 0.85rem; color: var(--tx-2); line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+    .detail-foot { padding: 16px 20px; border-top: 1px solid var(--line-sub); display: flex; gap: 8px; }
+
+    @media (max-width: 1024px) {
+      .sched-layout { grid-template-columns: 280px 1fr; }
+    }
+    @media (max-width: 768px) {
+      .sched-layout { grid-template-columns: 1fr; }
+      .sched-left { display: none; }
+      .detail-panel { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- 사이드바 -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-mark">SI</div>
+      <span class="brand-name">SION</span>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">메인</span>
+      <a href="index.html" class="nav-link">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="nav-label">대시보드</span>
+      </a>
+      <span class="nav-section-label">관리</span>
+      <a href="schedule.html" class="nav-link active">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="nav-label">스케쥴</span>
+      </a>
+      <a href="vault.html" class="nav-link">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">자료보관함</span>
+      </a>
+      <span class="nav-section-label">예정</span>
+      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <span class="nav-label">대화보관함</span>
+      </a>
+      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+        <span class="nav-label">SION AI</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-toggle" id="sidebarToggle">
+        <svg class="toggle-ico nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M21 19l-7-7 7-7"/></svg>
+        <span style="font-size:0.8rem;color:var(--tx-3)">접기</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- 메인 -->
+  <div class="content" id="content">
+    <div class="topbar">
+      <span class="topbar-path">SION / 관리 /</span>
+      <span class="topbar-title">스케쥴</span>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="btn-add-top">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          일정 추가
+        </button>
+      </div>
+    </div>
+
+    <div class="page">
+      <div class="sched-layout">
+
+        <!-- 왼쪽 패널 -->
+        <div class="sched-left">
+
+          <!-- 오늘 요약 -->
+          <div class="today-summary">
+            <div class="ts-date" id="ts-date"></div>
+            <div style="font-size:1.2rem;font-weight:700;color:var(--tx-1);margin-bottom:4px" id="ts-headline">오늘의 일정</div>
+            <div class="ts-progress-bar"><div class="ts-progress-fill" id="ts-bar" style="width:0%"></div></div>
+            <div class="ts-counts"><span id="ts-done-count">0 / 0 완료</span><span id="ts-remain">남은 항목: 0</span></div>
+          </div>
+
+          <!-- 필터 -->
+          <div class="card card-sm">
+            <div class="card-header" style="margin-bottom:10px">
+              <span class="card-title">카테고리 필터</span>
+            </div>
+            <div class="filter-chips" id="cat-filter">
+              <button class="chip active" data-cat="">전체</button>
+              <button class="chip" data-cat="과제">과제</button>
+              <button class="chip" data-cat="수행">수행</button>
+              <button class="chip" data-cat="시험">시험</button>
+              <button class="chip" data-cat="약속">약속</button>
+              <button class="chip" data-cat="기타">기타</button>
+            </div>
+          </div>
+
+          <!-- 미니 캘린더 -->
+          <div class="card">
+            <div class="mini-cal">
+              <div class="mini-cal-header">
+                <button class="mini-cal-nav" id="cal-prev">‹</button>
+                <span class="mini-cal-title" id="cal-title"></span>
+                <button class="mini-cal-nav" id="cal-next">›</button>
+              </div>
+              <div class="mini-cal-days">
+                <div class="mini-cal-day-label">일</div>
+                <div class="mini-cal-day-label">월</div>
+                <div class="mini-cal-day-label">화</div>
+                <div class="mini-cal-day-label">수</div>
+                <div class="mini-cal-day-label">목</div>
+                <div class="mini-cal-day-label">금</div>
+                <div class="mini-cal-day-label">토</div>
+              </div>
+              <div class="mini-cal-grid" id="cal-grid"></div>
+            </div>
+          </div>
+
+          <!-- 미완료 요약 -->
+          <div class="card card-sm">
+            <div class="card-header" style="margin-bottom:10px">
+              <span class="card-title">7일 내 미완료</span>
+            </div>
+            <div id="upcoming-7day" style="display:flex;flex-direction:column;gap:4px"></div>
+          </div>
+
+        </div>
+
+        <!-- 오른쪽 패널 -->
+        <div class="sched-right">
+          <div class="sched-toolbar">
+            <span class="sched-date-label" id="sched-date-label">오늘</span>
+            <div style="position:relative">
+              <input class="input" type="text" placeholder="검색..." id="sched-search" style="width:200px;padding-right:32px"/>
+              <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--tx-3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-ghost" id="view-toggle">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                보기
+              </button>
+              <div class="dropdown-menu" id="view-menu">
+                <button class="dropdown-item active" data-view="list">목록 보기</button>
+                <button class="dropdown-item" data-view="compact">간단 보기</button>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-add">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              추가
+            </button>
+          </div>
+
+          <!-- 완료 필터 -->
+          <div style="display:flex;gap:6px;align-items:center">
+            <button class="chip active" id="filter-all">전체</button>
+            <button class="chip" id="filter-todo">미완료</button>
+            <button class="chip" id="filter-done">완료</button>
+            <span style="margin-left:auto;font-size:0.75rem;color:var(--tx-3);font-family:var(--font-mono)" id="sched-count"></span>
+          </div>
+
+          <div class="sched-list" id="sched-list">
+            <div class="skeleton" style="height:72px"></div>
+            <div class="skeleton" style="height:72px;margin-top:6px"></div>
+            <div class="skeleton" style="height:72px;margin-top:6px"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 상세 슬라이드 패널 -->
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-head">
+    <div class="detail-title" id="dp-title">—</div>
+    <button class="btn-icon" id="dp-close" style="flex-shrink:0">✕</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-row"><span class="detail-label">카테고리</span><div id="dp-cat"></div></div>
+    <div class="detail-row"><span class="detail-label">날짜/시간</span><span class="detail-val" id="dp-date"></span></div>
+    <div class="detail-row" id="dp-kw-row"><span class="detail-label">키워드</span><div class="tag-list" id="dp-keywords"></div></div>
+    <div class="detail-row" id="dp-content-row"><span class="detail-label">내용</span><div class="detail-content" id="dp-content"></div></div>
+    <div class="detail-row" id="dp-add-row"><span class="detail-label">추가 정보</span><span class="detail-val" id="dp-add"></span></div>
+  </div>
+  <div class="detail-foot">
+    <button class="btn btn-ghost" id="dp-edit">✏ 수정</button>
+    <button class="btn btn-danger" id="dp-delete">삭제</button>
+    <button class="btn btn-primary" id="dp-toggle" style="margin-left:auto">완료로 표시</button>
+  </div>
+</div>
+
+<!-- 추가/수정 모달 -->
+<div class="modal-backdrop" id="modal-sched">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-title">일정 추가</span>
+      <button class="btn-icon" onclick="SION.ui.closeModal('modal-sched')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="form-id"/>
+      <div class="form-group">
+        <label class="input-label">제목 *</label>
+        <input class="input" type="text" id="form-name" placeholder="일정 제목"/>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group">
+          <label class="input-label">카테고리</label>
+          <select class="input" id="form-cat">
+            <option value="">선택 없음</option>
+            <option value="과제">과제</option>
+            <option value="수행">수행평가</option>
+            <option value="시험">시험</option>
+            <option value="약속">약속</option>
+            <option value="기타">기타</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="input-label">날짜/시간</label>
+          <input class="input" type="datetime-local" id="form-date"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="input-label">키워드 (Enter로 추가)</label>
+        <input class="input" type="text" id="form-kw-input" placeholder="키워드 입력 후 Enter"/>
+        <div class="tag-list" id="form-kw-tags"></div>
+      </div>
+      <div class="form-group">
+        <label class="input-label">상세 내용</label>
+        <textarea class="input" id="form-content" placeholder="상세 내용을 입력하세요"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="input-label">추가 정보</label>
+        <input class="input" type="text" id="form-add" placeholder="링크, 장소 등"/>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-sched')">취소</button>
+      <button class="btn btn-primary" id="form-save">저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+<script src="sion.js"></script>
+<script>
+// ============================================================
+//  스케쥴 페이지 로직
+// ============================================================
+SION.ui.initSidebar();
+
+// ── 상태 ─────────────────────────────────────
+let allData      = [];     // 현재 선택 날짜의 전체 일정
+let monthData    = {};     // 월별 날짜→일정 맵
+let selectedDate = SION.date.toDate(); // 'YYYY-MM-DD'
+let calYear, calMonth;
+let filterCat    = '';
+let filterEnd    = 'all'; // all / todo / done
+let viewMode     = 'list';
+let searchQ      = '';
+let detailItem   = null;
+let formKeywords = [];
+
+// ── 초기화 ───────────────────────────────────
+(async () => {
+  const now = new Date();
+  calYear  = now.getFullYear();
+  calMonth = now.getMonth() + 1;
+
+  // 오늘 날짜 표시
+  const d = new Date();
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('ts-date').textContent =
+    `${d.getFullYear()}.${SION.util.pad(d.getMonth()+1)}.${SION.util.pad(d.getDate())} ${days[d.getDay()]}요일`;
+
+  initCalendarControls();
+  initFilterControls();
+  initFormControls();
+  initDetailPanel();
+
+  // URL 파라미터로 카테고리 필터 자동 적용
+  const params = new URLSearchParams(location.search);
+  if (params.get('cat')) {
+    filterCat = params.get('cat');
+    document.querySelectorAll('#cat-filter .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.cat === filterCat);
+    });
+  }
+
+  await Promise.all([loadMonthData(), loadData()]);
+  renderCalendar();
+  loadUpcoming7();
+})();
+
+// ── 데이터 로드 ───────────────────────────────
+async function loadData() {
+  document.getElementById('sched-list').innerHTML =
+    ['','',''].map(() => `<div class="skeleton" style="height:72px;margin-bottom:6px"></div>`).join('');
+
+  try {
+    let q = `s_date=gte.${selectedDate}T00:00:00&s_date=lte.${selectedDate}T23:59:59&order=s_date.asc&limit=100`;
+    allData = await SION.db.select('schedule', q);
+    renderList();
+    updateTodaySummary();
+  } catch(e) {
+    SION.ui.toast('일정 로드 실패: ' + e.message, 'error');
+    allData = [];
+    renderList();
+  }
+}
+
+async function loadMonthData() {
+  const start = new Date(calYear, calMonth-1, 1);
+  const end   = new Date(calYear, calMonth,   0);
+  start.setDate(start.getDate() - 7);
+  end.setDate(end.getDate() + 7);
+
+  try {
+    const data = await SION.db.select('schedule',
+      `s_date=gte.${SION.date.toISO(start)}&s_date=lte.${SION.date.toISO(end)}&select=id,s_date,s_end,s_category`
+    );
+    monthData = {};
+    data.forEach(item => {
+      const k = SION.date.toDate(new Date(item.s_date));
+      if (!monthData[k]) monthData[k] = [];
+      monthData[k].push(item);
+    });
+  } catch(e) {}
+}
+
+async function loadUpcoming7() {
+  const now   = new Date(); now.setHours(0,0,0,0);
+  const end7  = new Date(now); end7.setDate(end7.getDate() + 7); end7.setHours(23,59,59,999);
+  try {
+    const data = await SION.db.select('schedule',
+      `s_end=eq.false&s_date=gte.${SION.date.toISO(now)}&s_date=lte.${SION.date.toISO(end7)}&order=s_date.asc&limit=10`
+    );
+    const el = document.getElementById('upcoming-7day');
+    if (data.length === 0) {
+      el.innerHTML = `<div class="empty-state" style="padding:12px 0"><div class="empty-state-text">7일 내 미완료 일정 없음</div></div>`;
+      return;
+    }
+    el.innerHTML = data.map(item => {
+      const ds = SION.date.toDate(new Date(item.s_date));
+      const dd = SION.date.dday(ds);
+      return `
+        <div style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer" onclick="selectDate('${ds}')">
+          <span style="font-family:var(--font-mono);font-size:0.68rem;color:var(--ac);min-width:38px">${dd.label}</span>
+          <span style="font-size:0.78rem;color:var(--tx-1);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${SION.util.esc(item.s_name)}</span>
+          ${SION.ui.catBadge(item.s_category)}
+        </div>`;
+    }).join('');
+  } catch(e) {}
+}
+
+// ── 렌더링 ───────────────────────────────────
+function renderList() {
+  let data = [...allData];
+
+  // 카테고리 필터
+  if (filterCat) data = data.filter(d => d.s_category === filterCat);
+  // 완료 필터
+  if (filterEnd === 'todo') data = data.filter(d => !d.s_end);
+  if (filterEnd === 'done') data = data.filter(d => d.s_end);
+  // 검색
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    data = data.filter(d =>
+      d.s_name?.toLowerCase().includes(q) ||
+      d.s_content?.toLowerCase().includes(q) ||
+      d.s_keywords?.some(k => k.toLowerCase().includes(q))
+    );
+  }
+
+  document.getElementById('sched-count').textContent = `${data.length}건`;
+
+  const list = document.getElementById('sched-list');
+  if (data.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📋</div>
+        <div class="empty-state-text">일정이 없습니다</div>
+        <div class="empty-state-sub">새 일정을 추가해보세요</div>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = data.map(item => {
+    const compact = viewMode === 'compact';
+    return `
+      <div class="sched-item ${item.s_end ? 'done' : ''}" data-id="${item.id}">
+        <div class="sched-check ${item.s_end ? 'done' : ''}" data-id="${item.id}">
+          ${item.s_end ? `<svg width="11" height="11" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>` : ''}
+        </div>
+        <div class="sched-body" style="cursor:pointer" data-open="${item.id}">
+          <div class="sched-name">${SION.util.esc(item.s_name)}</div>
+          ${!compact ? `<div class="sched-meta">
+            ${item.s_date ? `<span class="sched-time">${SION.date.fmtDateTime(item.s_date)}</span>` : ''}
+            ${SION.ui.catBadge(item.s_category)}
+            ${item.s_keywords?.length ? `<div class="sched-keywords">${item.s_keywords.map(k => `<span class="sched-keyword">${SION.util.esc(k)}</span>`).join('')}</div>` : ''}
+          </div>
+          ${item.s_content ? `<div class="sched-content-preview">${SION.util.esc(item.s_content)}</div>` : ''}` : ''}
+        </div>
+        <div class="sched-actions">
+          <button class="btn-icon btn-sm edit-btn" data-id="${item.id}" title="수정">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="btn-icon btn-sm del-btn" data-id="${item.id}" title="삭제">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  // 이벤트 바인딩
+  list.querySelectorAll('.sched-check').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); toggleDone(btn.dataset.id); });
+  });
+  list.querySelectorAll('[data-open]').forEach(el => {
+    el.addEventListener('click', () => openDetail(el.dataset.open));
+  });
+  list.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); openEdit(btn.dataset.id); });
+  });
+  list.querySelectorAll('.del-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); deleteItem(btn.dataset.id); });
+  });
+}
+
+function updateTodaySummary() {
+  const today = SION.date.toDate();
+  const isToday = selectedDate === today;
+  const total = allData.length;
+  const done  = allData.filter(d => d.s_end).length;
+  const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('ts-bar').style.width = pct + '%';
+  document.getElementById('ts-done-count').textContent = `${done} / ${total} 완료`;
+  document.getElementById('ts-remain').textContent = `남은 항목: ${total - done}`;
+
+  const label = isToday ? '오늘의 일정' : `${selectedDate.replace(/-/g,'.')} 일정`;
+  document.getElementById('ts-headline').textContent = label;
+
+  // 날짜 레이블
+  const d = SION.date.parseDate(selectedDate);
+  const days = ['일','월','화','수','목','금','토'];
+  document.getElementById('sched-date-label').textContent =
+    isToday ? `오늘 · ${total}건` : `${d.getMonth()+1}월 ${d.getDate()}일 (${days[d.getDay()]}) · ${total}건`;
+}
+
+// ── 미니 캘린더 ──────────────────────────────
+function renderCalendar() {
+  const pad = SION.util.pad;
+  document.getElementById('cal-title').textContent = `${calYear}.${pad(calMonth)}`;
+
+  const first   = new Date(calYear, calMonth-1, 1);
+  const lastDay = new Date(calYear, calMonth, 0).getDate();
+  const startDow = first.getDay();
+  const prevLast = new Date(calYear, calMonth-1, 0).getDate();
+  const todayStr = SION.date.toDate();
+  const grid = document.getElementById('cal-grid');
+
+  let html = '';
+  // 이전달
+  for (let i = startDow - 1; i >= 0; i--) {
+    const day = prevLast - i;
+    const ds  = `${calYear}-${pad(calMonth-1 || 12)}-${pad(day)}`;
+    html += `<div class="cal-cell other" data-date="${ds}">${day}</div>`;
+  }
+  // 이번달
+  for (let d = 1; d <= lastDay; d++) {
+    const ds  = `${calYear}-${pad(calMonth)}-${pad(d)}`;
+    const dow = new Date(calYear, calMonth-1, d).getDay();
+    const cls = [
+      ds === todayStr    ? 'today'    : '',
+      ds === selectedDate? 'selected' : '',
+      monthData[ds]?.length ? 'has-event' : '',
+      dow === 0          ? 'sun'      : '',
+    ].filter(Boolean).join(' ');
+    html += `<div class="cal-cell ${cls}" data-date="${ds}">${d}</div>`;
+  }
+  // 다음달
+  let nextD = 1;
+  const total = startDow + lastDay;
+  const rows  = Math.ceil(total / 7);
+  for (let i = total; i < rows * 7; i++) {
+    const ds = `${calYear}-${pad(calMonth % 12 + 1)}-${pad(nextD)}`;
+    html += `<div class="cal-cell other" data-date="${ds}">${nextD++}</div>`;
+  }
+  grid.innerHTML = html;
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(cell => {
+    cell.addEventListener('click', () => selectDate(cell.dataset.date));
+  });
+}
+
+function initCalendarControls() {
+  document.getElementById('cal-prev').addEventListener('click', async () => {
+    calMonth--;
+    if (calMonth < 1) { calMonth = 12; calYear--; }
+    await loadMonthData();
+    renderCalendar();
+  });
+  document.getElementById('cal-next').addEventListener('click', async () => {
+    calMonth++;
+    if (calMonth > 12) { calMonth = 1; calYear++; }
+    await loadMonthData();
+    renderCalendar();
+  });
+}
+
+async function selectDate(ds) {
+  selectedDate = ds;
+  // 달력 월 맞추기
+  const [y, m] = ds.split('-').map(Number);
+  if (y !== calYear || m !== calMonth) {
+    calYear = y; calMonth = m;
+    await loadMonthData();
+  }
+  renderCalendar();
+  await loadData();
+}
+
+// ── 필터 ─────────────────────────────────────
+function initFilterControls() {
+  // 카테고리 칩
+  document.getElementById('cat-filter').addEventListener('click', e => {
+    const chip = e.target.closest('.chip');
+    if (!chip) return;
+    document.querySelectorAll('#cat-filter .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    filterCat = chip.dataset.cat;
+    renderList();
+  });
+
+  // 완료 필터
+  ['all','todo','done'].forEach(id => {
+    document.getElementById(`filter-${id}`).addEventListener('click', () => {
+      document.querySelectorAll('.sched-right .chip').forEach(c => c.classList.remove('active'));
+      document.getElementById(`filter-${id}`).classList.add('active');
+      filterEnd = id;
+      renderList();
+    });
+  });
+
+  // 검색
+  document.getElementById('sched-search').addEventListener('input',
+    SION.util.debounce(e => { searchQ = e.target.value.trim(); renderList(); }, 250)
+  );
+
+  // 보기 토글
+  document.getElementById('view-toggle').addEventListener('click', e => {
+    e.stopPropagation();
+    document.getElementById('view-menu').classList.toggle('open');
+  });
+  document.querySelectorAll('[data-view]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      viewMode = btn.dataset.view;
+      document.querySelectorAll('[data-view]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('view-menu').classList.remove('open');
+      renderList();
+    });
+  });
+}
+
+// ── 상세 패널 ─────────────────────────────────
+function initDetailPanel() {
+  document.getElementById('dp-close').addEventListener('click', closeDetail);
+  document.getElementById('dp-edit').addEventListener('click', () => {
+    if (detailItem) { closeDetail(); openEdit(detailItem.id); }
+  });
+  document.getElementById('dp-delete').addEventListener('click', () => {
+    if (detailItem) deleteItem(detailItem.id);
+  });
+  document.getElementById('dp-toggle').addEventListener('click', async () => {
+    if (!detailItem) return;
+    await toggleDone(detailItem.id);
+    closeDetail();
+  });
+}
+
+function openDetail(id) {
+  const item = allData.find(d => String(d.id) === String(id));
+  if (!item) return;
+  detailItem = item;
+
+  document.getElementById('dp-title').textContent = item.s_name;
+  document.getElementById('dp-cat').innerHTML = SION.ui.catBadge(item.s_category);
+  document.getElementById('dp-date').textContent = item.s_date ? SION.date.fmtDateTime(item.s_date) : '—';
+
+  const kwEl = document.getElementById('dp-keywords');
+  kwEl.innerHTML = item.s_keywords?.length
+    ? item.s_keywords.map(k => `<span class="tag">${SION.util.esc(k)}</span>`).join('')
+    : '<span style="color:var(--tx-3);font-size:0.78rem">없음</span>';
+
+  const contentEl = document.getElementById('dp-content');
+  contentEl.textContent = item.s_content || '';
+  document.getElementById('dp-content-row').style.display = item.s_content ? '' : 'none';
+
+  document.getElementById('dp-add').textContent = item.s_add || '';
+  document.getElementById('dp-add-row').style.display = item.s_add ? '' : 'none';
+
+  const toggleBtn = document.getElementById('dp-toggle');
+  toggleBtn.textContent = item.s_end ? '미완료로 변경' : '완료로 표시';
+  toggleBtn.className = `btn ${item.s_end ? 'btn-ghost' : 'btn-primary'}`;
+
+  document.getElementById('detail-panel').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  detailItem = null;
+}
+
+// ── CRUD ─────────────────────────────────────
+async function toggleDone(id) {
+  const item = allData.find(d => String(d.id) === String(id));
+  if (!item) return;
+  try {
+    await SION.db.update('schedule', `id=eq.${id}`, { s_end: !item.s_end });
+    item.s_end = !item.s_end;
+    SION.ui.toast(item.s_end ? '완료 처리됨' : '미완료로 변경됨', 'success');
+    renderList();
+    updateTodaySummary();
+    if (detailItem?.id == id) {
+      const toggleBtn = document.getElementById('dp-toggle');
+      toggleBtn.textContent = item.s_end ? '미완료로 변경' : '완료로 표시';
+      toggleBtn.className = `btn ${item.s_end ? 'btn-ghost' : 'btn-primary'}`;
+    }
+  } catch(e) { SION.ui.toast('오류: ' + e.message, 'error'); }
+}
+
+async function deleteItem(id) {
+  if (!confirm('이 일정을 삭제하시겠습니까?')) return;
+  try {
+    await SION.db.remove('schedule', `id=eq.${id}`);
+    allData = allData.filter(d => String(d.id) !== String(id));
+    SION.ui.toast('삭제됨', 'success');
+    closeDetail();
+    renderList();
+    updateTodaySummary();
+    await loadMonthData();
+    renderCalendar();
+    loadUpcoming7();
+  } catch(e) { SION.ui.toast('삭제 실패: ' + e.message, 'error'); }
+}
+
+// ── 폼 ───────────────────────────────────────
+function initFormControls() {
+  ['btn-add', 'btn-add-top'].forEach(id => {
+    document.getElementById(id)?.addEventListener('click', () => openAdd());
+  });
+
+  // 키워드 인풋
+  document.getElementById('form-kw-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const v = e.target.value.trim().replace(/,$/,'');
+      if (v && !formKeywords.includes(v)) {
+        formKeywords.push(v);
+        renderFormKeywords();
+      }
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('form-save').addEventListener('click', saveItem);
+}
+
+function renderFormKeywords() {
+  document.getElementById('form-kw-tags').innerHTML = formKeywords.map((k, i) => `
+    <span class="tag">${SION.util.esc(k)}<span class="tag-remove" data-i="${i}">✕</span></span>
+  `).join('');
+  document.querySelectorAll('#form-kw-tags .tag-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      formKeywords.splice(Number(btn.dataset.i), 1);
+      renderFormKeywords();
+    });
+  });
+}
+
+function openAdd() {
+  document.getElementById('form-id').value      = '';
+  document.getElementById('form-name').value    = '';
+  document.getElementById('form-cat').value     = '';
+  document.getElementById('form-date').value    = selectedDate ? `${selectedDate}T09:00` : '';
+  document.getElementById('form-content').value = '';
+  document.getElementById('form-add').value     = '';
+  formKeywords = [];
+  renderFormKeywords();
+  document.getElementById('modal-title').textContent = '일정 추가';
+  SION.ui.openModal('modal-sched');
+  setTimeout(() => document.getElementById('form-name').focus(), 100);
+}
+
+function openEdit(id) {
+  const item = allData.find(d => String(d.id) === String(id));
+  if (!item) return;
+  document.getElementById('form-id').value      = item.id;
+  document.getElementById('form-name').value    = item.s_name || '';
+  document.getElementById('form-cat').value     = item.s_category || '';
+  document.getElementById('form-date').value    = SION.date.toDatetimeLocal(item.s_date);
+  document.getElementById('form-content').value = item.s_content || '';
+  document.getElementById('form-add').value     = item.s_add || '';
+  formKeywords = Array.isArray(item.s_keywords) ? [...item.s_keywords] : [];
+  renderFormKeywords();
+  document.getElementById('modal-title').textContent = '일정 수정';
+  SION.ui.openModal('modal-sched');
+}
+
+async function saveItem() {
+  const name = document.getElementById('form-name').value.trim();
+  if (!name) { SION.ui.toast('제목을 입력하세요', 'error'); return; }
+
+  const id       = document.getElementById('form-id').value;
+  const dateVal  = document.getElementById('form-date').value;
+  const body = {
+    s_name:     name,
+    s_date:     dateVal ? new Date(dateVal).toISOString() : null,
+    s_category: document.getElementById('form-cat').value || null,
+    s_keywords: formKeywords.length > 0 ? formKeywords : null,
+    s_content:  document.getElementById('form-content').value.trim() || null,
+    s_add:      document.getElementById('form-add').value.trim() || null,
+  };
+
+  const saveBtn = document.getElementById('form-save');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = SION.ui.spinner(14) + ' 저장중';
+
+  try {
+    if (id) {
+      const res = await SION.db.update('schedule', `id=eq.${id}`, body);
+      const updated = Array.isArray(res) ? res[0] : res;
+      const idx = allData.findIndex(d => String(d.id) === String(id));
+      if (idx !== -1 && updated) allData[idx] = { ...allData[idx], ...updated };
+      SION.ui.toast('수정됨', 'success');
+    } else {
+      body.s_end = false;
+      const res = await SION.db.insert('schedule', body);
+      const inserted = Array.isArray(res) ? res[0] : res;
+      // 날짜가 선택된 날짜와 같으면 목록에 추가
+      if (inserted && SION.date.toDate(new Date(inserted.s_date)) === selectedDate) {
+        allData.push(inserted);
+      }
+      SION.ui.toast('추가됨', 'success');
+    }
+    SION.ui.closeModal('modal-sched');
+    renderList();
+    updateTodaySummary();
+    await loadMonthData();
+    renderCalendar();
+    loadUpcoming7();
+  } catch(e) {
+    SION.ui.toast('저장 실패: ' + e.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = '저장';
+  }
+}
+</script>
+</body>
+</html>
