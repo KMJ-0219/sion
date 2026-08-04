@@ -28,21 +28,16 @@ const SION = (() => {
     return res.json();
   }
 
-  // SELECT
   const select = (table, query = '') => db(`${table}?${query}`);
-  // INSERT
   const insert = (table, body) => db(table, {
     method: 'POST', prefer: 'return=representation',
     body: JSON.stringify(body)
   });
-  // UPDATE
   const update = (table, match, body) => db(`${table}?${match}`, {
     method: 'PATCH', prefer: 'return=representation',
     body: JSON.stringify(body)
   });
-  // DELETE
   const remove = (table, match) => db(`${table}?${match}`, { method: 'DELETE' });
-  // RPC (function)
   const rpc = (fn, body) => db(`rpc/${fn}`, {
     method: 'POST', prefer: '',
     body: JSON.stringify(body)
@@ -54,37 +49,31 @@ const SION = (() => {
 
   function now() { return new Date(); }
 
-  // Date → 'YYYY-MM-DD' (로컬)
   function toDate(d = new Date()) {
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
   }
 
-  // 'YYYY-MM-DD' → 로컬 자정 Date (UTC 파싱 버그 방지)
   function parseDate(s) {
     const [y,m,d] = s.split('-').map(Number);
     return new Date(y, m-1, d);
   }
 
-  // Date → 로컬 ISO (Supabase 쿼리용)
   function toISO(d) {
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
-  // ISO → 'MM/DD HH:mm'
   function fmtDateTime(iso) {
     if (!iso) return '';
     const d = new Date(iso);
     return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // ISO → 'YYYY.MM.DD'
   function fmtDate(iso) {
     if (!iso) return '';
     const d = new Date(iso);
     return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`;
   }
 
-  // D-day 계산 (dateStr: 'YYYY-MM-DD')
   function dday(dateStr) {
     const t = parseDate(dateStr);
     const n = new Date(); n.setHours(0,0,0,0);
@@ -94,13 +83,11 @@ const SION = (() => {
     return { label: `D+${Math.abs(diff)}`, cls: 'past' };
   }
 
-  // datetime-local value → Date
   function fromDatetimeLocal(v) {
     if (!v) return null;
     return new Date(v);
   }
 
-  // ISO → datetime-local value
   function toDatetimeLocal(iso) {
     if (!iso) return '';
     const d = new Date(iso);
@@ -147,7 +134,6 @@ const SION = (() => {
       localStorage.setItem(key, c ? '1' : '0');
     });
 
-    // 드롭다운 닫기
     document.addEventListener('click', e => {
       document.querySelectorAll('.dropdown-menu.open').forEach(m => {
         if (!m.closest('.dropdown')?.contains(e.target)) m.classList.remove('open');
@@ -166,7 +152,6 @@ const SION = (() => {
     document.getElementById(id)?.classList.remove('open');
   }
 
-  // ESC 키 모달 닫기
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
       document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
@@ -191,7 +176,6 @@ const SION = (() => {
     return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
   }
 
-  // ── Public API ────────────────────────────
   return {
     db: { select, insert, update, remove, rpc },
     date: { now, toDate, parseDate, toISO, fmtDateTime, fmtDate, dday, fromDatetimeLocal, toDatetimeLocal },
