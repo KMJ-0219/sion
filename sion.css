@@ -7,46 +7,38 @@
 
 /* ── 토큰 ─────────────────────────────────── */
 :root {
-  /* 배경 계층 */
   --bg-base:    #080c12;
   --bg-raised:  #0e1420;
   --bg-float:   #141c2e;
   --bg-overlay: #1a2438;
 
-  /* 테두리 */
   --line-sub:   rgba(255,255,255,0.05);
   --line-mid:   rgba(255,255,255,0.09);
   --line-hi:    rgba(255,255,255,0.16);
 
-  /* 텍스트 */
   --tx-1: #e8edf5;
   --tx-2: #8a96b0;
   --tx-3: #4e5a74;
   --tx-4: #2e3850;
 
-  /* 액센트 — 시안 */
   --ac:       #00c4a0;
   --ac-dim:   rgba(0,196,160,0.12);
   --ac-glow:  rgba(0,196,160,0.25);
   --ac-soft:  rgba(0,196,160,0.06);
 
-  /* 카테고리 컬러 */
   --c-과제:  #60a5fa;
   --c-수행:  #a78bfa;
   --c-시험:  #f87171;
   --c-약속:  #34d399;
   --c-기타:  #94a3b8;
 
-  /* 상태 */
   --red:    #f87171;
   --yellow: #fbbf24;
   --green:  #34d399;
 
-  /* 타이포 */
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
-  /* 크기 */
   --nav-w:    220px;
   --nav-w-sm: 60px;
   --radius:   10px;
@@ -54,7 +46,6 @@
   --shadow:   0 4px 24px rgba(0,0,0,0.5);
 }
 
-/* ── 리셋 ─────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 15px; -webkit-font-smoothing: antialiased; }
 body {
@@ -72,13 +63,11 @@ ul, ol { list-style: none; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--line-hi); border-radius: 3px; }
 
-/* ── 레이아웃 — 사이드바 + 콘텐츠 ─────────── */
 .app {
   display: flex;
   min-height: 100vh;
 }
 
-/* ── 사이드바 ─────────────────────────────── */
 .sidebar {
   width: var(--nav-w);
   flex-shrink: 0;
@@ -93,7 +82,6 @@ ul, ol { list-style: none; }
 }
 .sidebar.collapsed { width: var(--nav-w-sm); }
 
-/* 브랜드 */
 .sidebar-brand {
   padding: 20px 18px 16px;
   border-bottom: 1px solid var(--line-sub);
@@ -125,7 +113,6 @@ ul, ol { list-style: none; }
 }
 .sidebar.collapsed .brand-name { opacity: 0; width: 0; }
 
-/* 네비 */
 .sidebar-nav {
   flex: 1;
   padding: 10px 10px;
@@ -198,7 +185,6 @@ ul, ol { list-style: none; }
 }
 .sidebar.collapsed .nav-badge { opacity: 0; }
 
-/* 사이드바 하단 */
 .sidebar-footer {
   padding: 12px 10px;
   border-top: 1px solid var(--line-sub);
@@ -219,7 +205,6 @@ ul, ol { list-style: none; }
 .sidebar.collapsed .toggle-ico { transform: scaleX(-1); }
 .sidebar.collapsed .sidebar-toggle span:last-child { opacity: 0; width: 0; overflow: hidden; }
 
-/* ── 메인 콘텐츠 영역 ─────────────────────── */
 .content {
   flex: 1;
   margin-left: var(--nav-w);
@@ -230,7 +215,6 @@ ul, ol { list-style: none; }
 }
 .content.expanded { margin-left: var(--nav-w-sm); }
 
-/* 상단 바 */
 .topbar {
   height: 56px;
   border-bottom: 1px solid var(--line-sub);
@@ -261,7 +245,6 @@ ul, ol { list-style: none; }
   gap: 10px;
 }
 
-/* 페이지 본문 */
 .page {
   flex: 1;
   padding: 28px;
@@ -269,9 +252,6 @@ ul, ol { list-style: none; }
   width: 100%;
 }
 
-/* ── 공통 컴포넌트 ────────────────────────── */
-
-/* 버튼 */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -314,7 +294,6 @@ ul, ol { list-style: none; }
 }
 .btn-icon:hover { background: var(--bg-overlay); color: var(--tx-1); }
 
-/* 카드 */
 .card {
   background: var(--bg-raised);
   border: 1px solid var(--line-mid);
@@ -336,7 +315,6 @@ ul, ol { list-style: none; }
   letter-spacing: 0.08em;
 }
 
-/* 뱃지 */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -353,7 +331,6 @@ ul, ol { list-style: none; }
 .badge-약속 { background: rgba(52,211,153,0.12);  color: var(--c-약속); }
 .badge-기타 { background: rgba(148,163,184,0.1);  color: var(--c-기타); }
 
-/* 인풋 */
 .input {
   width: 100%;
   background: var(--bg-float);
@@ -381,13 +358,10 @@ ul, ol { list-style: none; }
 }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 
-/* 선택 */
 select.input { appearance: none; cursor: pointer; }
 
-/* 텍스트에리어 */
 textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
 
-/* 체크박스 */
 .checkbox-wrap {
   display: flex;
   align-items: center;
@@ -409,7 +383,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
   border-color: var(--ac);
 }
 
-/* 드롭다운 */
 .dropdown {
   position: relative;
   display: inline-block;
@@ -447,7 +420,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
 .dropdown-item.danger:hover { background: rgba(248,113,113,0.08); }
 .dropdown-divider { height: 1px; background: var(--line-sub); margin: 4px 0; }
 
-/* 모달 */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -497,7 +469,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
   justify-content: flex-end;
 }
 
-/* 알림 토스트 */
 #toast-container {
   position: fixed;
   bottom: 24px;
@@ -529,7 +500,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
   to   { opacity:1; transform: translateX(0); }
 }
 
-/* 빈 상태 */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -544,7 +514,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
 .empty-state-text { font-size: 0.85rem; }
 .empty-state-sub  { font-size: 0.78rem; color: var(--tx-4); }
 
-/* 스켈레톤 */
 .skeleton {
   background: linear-gradient(90deg, var(--bg-float) 25%, var(--bg-overlay) 50%, var(--bg-float) 75%);
   background-size: 200% 100%;
@@ -556,14 +525,12 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
   100% { background-position: -200% 0; }
 }
 
-/* 구분선 */
 .divider {
   height: 1px;
   background: var(--line-sub);
   margin: 16px 0;
 }
 
-/* 태그 인풋 */
 .tag-list {
   display: flex;
   flex-wrap: wrap;
@@ -590,7 +557,6 @@ textarea.input { resize: vertical; min-height: 80px; line-height: 1.6; }
 }
 .tag-remove:hover { opacity: 1; color: var(--red); }
 
-/* ── 모바일 ────────────────────────────────── */
 @media (max-width: 768px) {
   :root { --nav-w: 100%; }
   .sidebar {
