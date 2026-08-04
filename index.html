@@ -14,13 +14,12 @@
 .sion-st{font-size:.66rem;color:var(--tx-3);font-family:var(--font-mono);display:flex;align-items:center;gap:4px}
 .st-dot{width:5px;height:5px;border-radius:50%;background:var(--ac);animation:blink 2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
-.model-sel{margin-left:auto;background:var(--bg-float);border:1px solid var(--line-mid);border-radius:6px;color:var(--tx-2);font-size:.7rem;padding:3px 7px;cursor:pointer;outline:none;font-family:var(--font-mono)}
-.model-sel:focus{border-color:var(--ac)}
+.model-badge{margin-left:auto;background:var(--bg-float);border:1px solid var(--line-mid);border-radius:6px;color:var(--tx-3);font-size:.68rem;padding:4px 8px;font-family:var(--font-mono);letter-spacing:.02em}
 .chat-msgs{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
 .chat-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--tx-3);text-align:center;padding:40px}
 .empty-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(0,196,160,.1),rgba(0,196,160,.03));border:1px solid rgba(0,196,160,.18);display:flex;align-items:center;justify-content:center;font-size:1.3rem}
 .empty-title{font-size:.95rem;font-weight:600;color:var(--tx-2)}
-.empty-sub{font-size:.78rem;color:var(--tx-3);line-height:1.65;max-width:300px}
+.empty-sub{font-size:.78rem;color:var(--tx-3);line-height:1.65;max-width:320px}
 .quick-cmds{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin-top:6px}
 .qcmd{padding:4px 11px;border-radius:20px;border:1px solid var(--line-mid);background:var(--bg-raised);color:var(--tx-2);font-size:.72rem;cursor:pointer;transition:all .15s}
 .qcmd:hover{border-color:var(--ac);color:var(--ac);background:var(--ac-dim)}
@@ -30,7 +29,7 @@
 .msg-av{width:26px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;font-family:var(--font-mono)}
 .msg.assistant .msg-av{background:linear-gradient(135deg,#00c4a0,#007a62);color:var(--bg-base)}
 .msg.user .msg-av{background:var(--bg-overlay);border:1px solid var(--line-mid);color:var(--tx-2)}
-.msg-body{display:flex;flex-direction:column;gap:3px}
+.msg-body{display:flex;flex-direction:column;gap:5px}
 .bubble{padding:9px 12px;border-radius:11px;font-size:.86rem;line-height:1.65;word-break:break-word}
 .msg.user .bubble{background:var(--ac);color:var(--bg-base);border-bottom-right-radius:2px}
 .msg.assistant .bubble{background:var(--bg-float);border:1px solid var(--line-mid);color:var(--tx-1);border-bottom-left-radius:2px}
@@ -40,8 +39,10 @@
 .msg.assistant .bubble li{margin:2px 0}
 .msg-time{font-size:.6rem;color:var(--tx-4);font-family:var(--font-mono);padding:0 2px}
 .msg.user .msg-time{text-align:right}
-.action-card{margin-top:5px;padding:9px 11px;background:var(--bg-raised);border:1px solid var(--line-mid);border-left:3px solid var(--ac);border-radius:8px;font-size:.77rem;color:var(--tx-2);line-height:1.5}
+.action-card{padding:9px 11px;background:var(--bg-raised);border:1px solid var(--line-mid);border-left:3px solid var(--ac);border-radius:8px;font-size:.77rem;color:var(--tx-2);line-height:1.5}
+.action-card.err{border-left-color:var(--red)}
 .action-card-title{font-size:.68rem;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.action-card.err .action-card-title{color:var(--red)}
 .typing-ind{display:flex;align-items:center;gap:4px;padding:11px 13px;background:var(--bg-float);border:1px solid var(--line-mid);border-radius:11px;border-bottom-left-radius:2px;width:fit-content}
 .tdot{width:5px;height:5px;border-radius:50%;background:var(--tx-3);animation:tdots 1.2s ease-in-out infinite}
 .tdot:nth-child(2){animation-delay:.2s}.tdot:nth-child(3){animation-delay:.4s}
@@ -58,11 +59,6 @@
 .dash-panel{overflow-y:auto;display:flex;flex-direction:column;background:var(--bg-raised)}
 .panel-sec{padding:13px 13px;border-bottom:1px solid var(--line-sub)}
 .psec-t{font-size:.6rem;font-weight:700;color:var(--tx-3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:7px;display:flex;align-items:center;justify-content:space-between}
-.conv-item{padding:7px 8px;border-radius:6px;cursor:pointer;transition:background .12s;margin-bottom:2px}
-.conv-item:hover{background:var(--bg-overlay)}
-.conv-item.active{background:var(--ac-dim)}
-.conv-title{font-size:.78rem;font-weight:500;color:var(--tx-1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.conv-meta{font-size:.62rem;color:var(--tx-3);font-family:var(--font-mono);display:flex;align-items:center;justify-content:space-between}
 .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px}
 .ms-card{padding:9px 10px;background:var(--bg-float);border-radius:8px;border:1px solid var(--line-mid);cursor:pointer;transition:border-color .12s}
 .ms-card:hover{border-color:var(--line-hi)}
@@ -143,25 +139,19 @@
               <span id="st-label">온라인 · 명령을 기다리는 중</span>
             </div>
           </div>
-          <select class="model-sel" id="model-sel">
-            <option value="llama-3.3-70b-versatile">Llama 3.3 70B</option>
-            <option value="llama-3.1-8b-instant">Llama 3.1 8B (빠름)</option>
-            <option value="meta-llama/llama-4-scout-17b-16e-instruct">Llama 4 Scout</option>
-            <option value="deepseek-r1-distill-llama-70b">DeepSeek R1 70B</option>
-          </select>
+          <span class="model-badge">GPT-4o mini</span>
         </div>
 
         <div class="chat-msgs" id="chat-msgs">
           <div class="chat-empty" id="chat-empty">
             <div class="empty-icon">✦</div>
             <div class="empty-title">SION에게 무엇이든 물어보세요</div>
-            <div class="empty-sub">일정 추가, 자료 보관, 정보 검색, 일반 대화 모두 가능합니다.<br>자연어로 입력하면 SION이 알아서 처리합니다.</div>
+            <div class="empty-sub">일정 추가, 자료 보관, 정보 검색, 일반 대화 모두 가능합니다.<br>한 문장에 여러 요청을 함께 담아도 SION이 알아서 나눠 처리합니다.</div>
             <div class="quick-cmds">
               <button class="qcmd" data-cmd="오늘 일정 알려줘">📋 오늘 일정</button>
               <button class="qcmd" data-cmd="내일 오후 2시에 수학 시험 일정 추가해줘">📅 일정 추가</button>
               <button class="qcmd" data-cmd="이번 주 시험이 있어?">📝 시험 확인</button>
-              <button class="qcmd" data-cmd="최근 자료 뭐가 있어?">📁 자료 확인</button>
-              <button class="qcmd" data-cmd="파이썬 딕셔너리란 키-값 쌍으로 데이터를 저장하는 자료구조야, 이걸 자료로 저장해줘">💾 자료 저장</button>
+              <button class="qcmd" data-cmd="내일 오후 2시 수학 시험 일정 추가하고, 파이썬 딕셔너리 개념도 자료로 저장해줘">🧠 복수 명령 예시</button>
             </div>
           </div>
         </div>
@@ -173,26 +163,14 @@
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
             </button>
           </div>
-          <div class="chat-hint">Enter 전송 · Shift+Enter 줄바꿈 · 일정 추가 / 자료 저장 명령 지원</div>
+          <div class="chat-hint">Enter 전송 · Shift+Enter 줄바꿈 · 한 번에 여러 명령 처리 가능</div>
         </div>
       </div>
 
       <!-- 오른쪽 대시 -->
       <div class="dash-panel">
         <div class="panel-sec">
-          <div class="psec-t">
-            <span>최근 대화</span>
-            <span id="conv-total" style="color:var(--tx-3)">0건</span>
-          </div>
-          <div id="conv-list">
-            <div class="skeleton" style="height:42px;margin-bottom:4px"></div>
-            <div class="skeleton" style="height:42px;margin-bottom:4px"></div>
-            <div class="skeleton" style="height:42px"></div>
-          </div>
-        </div>
-
-        <div class="panel-sec">
-          <div class="psec-t">오늘 현황</div>
+          <div class="psec-t"><span>오늘 현황</span></div>
           <div class="mini-stats">
             <div class="ms-card" onclick="location.href='schedule.html'">
               <div class="ms-n ac" id="ms-today">—</div>
@@ -223,98 +201,133 @@
 <script>
 SION.ui.initSidebar();
 
-const GROQ_KEY = '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';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+/* ⚠️ API 키가 프론트엔드에 노출됩니다. 실제 서비스로 확장 시
+   서버리스 함수(Edge Function 등) 뒤로 옮기는 걸 권장합니다. */
+const OPENAI_KEY = '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';
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const MODEL = 'gpt-4o-mini';
+
 const PAD = SION.util.pad;
 const DAYS = ['일','월','화','수','목','금','토'];
 
-let msgs = [];
-let convId = null;
+let msgs = [];       // 이번 세션 대화 컨텍스트 (영구 저장 안 함)
 let todayData = [];
 let thinking = false;
 
-// 날짜
 const now = new Date();
 document.getElementById('topbar-date').textContent =
   `${now.getFullYear()}.${PAD(now.getMonth()+1)}.${PAD(now.getDate())} ${DAYS[now.getDay()]}`;
 
-// 시스템 프롬프트
+// ── 함수 호출(툴) 정의 — 새 스키마(schedules / vault_items) 기준 ──
+const TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'add_schedule',
+      description: '일정(과제, 수행평가, 시험, 약속, 기타)을 schedules 테이블에 추가한다.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title:    { type: 'string', description: '일정 제목' },
+          due_at:   { type: 'string', description: 'ISO 8601 형식 날짜/시간, 예: 2026-08-05T14:00:00' },
+          category: { type: 'string', enum: ['과제','수행','시험','약속','기타'] },
+          content:  { type: 'string', description: '상세 내용 (선택)' },
+          location: { type: 'string', description: '장소/링크 등 부가 정보 (선택)' },
+          tags:     { type: 'array', items: { type: 'string' }, description: '태그 (선택)' }
+        },
+        required: ['title','due_at']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'add_vault',
+      description: '정보/지식/메모를 vault_items 테이블(자료보관함)에 저장한다.',
+      parameters: {
+        type: 'object',
+        properties: {
+          title:    { type: 'string', description: '자료 제목' },
+          content:  { type: 'string', description: '자료 전체 내용' },
+          category: { type: 'string', description: '카테고리 (선택)' },
+          tags:     { type: 'array', items: { type: 'string' }, description: '태그 (선택)' }
+        },
+        required: ['title','content']
+      }
+    }
+  }
+];
+
 function sysprompt() {
   const n = new Date();
   const dt = `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${DAYS[n.getDay()]}요일 ${PAD(n.getHours())}:${PAD(n.getMinutes())}`;
-  const sched = JSON.stringify(todayData.map(d=>({이름:d.s_name,시간:d.s_date?.slice(0,16),카테고리:d.s_category,완료:d.s_end})));
-  return `당신은 SION이라는 개인 AI 비서입니다. 현재: ${dt}.
+  const sched = JSON.stringify(todayData.map(d=>({이름:d.title,시간:d.due_at?.slice(0,16),카테고리:d.category,완료:d.is_done})));
+  return `당신은 SION이라는 개인 AI 비서입니다. 현재 시각: ${dt}.
 
-가능한 작업:
-1. 일반 대화/질문 답변
-2. 일정 추가 (schedule DB)
-3. 자료 보관 (vault DB)
-
-규칙:
-- 일정 추가 요청 시 반드시 순수 JSON만 출력: {"action":"add_schedule","s_name":"이름","s_date":"YYYY-MM-DDTHH:mm:00","s_category":"과제|수행|시험|약속|기타","s_content":"내용","s_keywords":["키워드"]}
-- 자료 추가 요청 시 반드시 순수 JSON만 출력: {"action":"add_vault","v_title":"제목","v_content":"전체내용","v_category":"카테고리","v_tags":["태그"]}
-- 그 외는 자연스러운 한국어 마크다운 사용
-- JSON과 텍스트를 절대 혼합하지 말 것
-- 날짜/시간이 불명확하면 오늘 또는 내일 적절히 추론할 것
+- 일정 추가 요청이 있으면 add_schedule 함수를 호출하세요.
+- 정보/지식/메모 저장 요청이 있으면 add_vault 함수를 호출하세요.
+- 한 메시지에 여러 요청이 섞여 있으면 필요한 함수를 각각 병렬로 호출하세요 (한 번에 여러 개 호출 가능).
+- 날짜/시간이 불명확하면 오늘 또는 내일 기준으로 자연스럽게 추론하세요.
+- 함수 호출이 필요 없는 일반 질문/대화는 자연스러운 한국어 마크다운으로 답하세요.
+- 함수를 호출한 뒤에는 결과를 바탕으로 짧고 친근하게 한 줄 요약해주세요.
 
 오늘 일정: ${sched}`;
 }
 
-// Groq 호출
-async function callGroq(conversation) {
-  const model = document.getElementById('model-sel').value;
-  const r = await fetch(GROQ_URL, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${GROQ_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: [{ role:'system', content:sysprompt() }, ...conversation],
-      max_tokens: 1200,
-      temperature: 0.7,
-    })
-  });
-  if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || `API 오류 ${r.status}`); }
-  const d = await r.json();
-  return d.choices[0].message.content;
-}
-
-// 응답 처리
-async function processReply(raw) {
-  const t = raw.trim();
-  // JSON 추출
-  let js = null;
-  const m1 = t.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const m2 = t.match(/^\{[\s\S]*\}$/);
-  if (m1) js = m1[1].trim();
-  else if (m2) js = t;
-
-  if (js) {
-    try {
-      const a = JSON.parse(js);
-      if (a.action === 'add_schedule') return execSched(a);
-      if (a.action === 'add_vault')    return execVault(a);
-    } catch(e) {}
+async function callOpenAI(conversation, useTools) {
+  const body = {
+    model: MODEL,
+    messages: [{ role:'system', content: sysprompt() }, ...conversation],
+    temperature: 0.7,
+  };
+  if (useTools) {
+    body.tools = TOOLS;
+    body.tool_choice = 'auto';
+    body.parallel_tool_calls = true;
   }
-  return { type:'text', content:raw };
+  const r = await fetch(OPENAI_URL, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const e = await r.json().catch(()=>({}));
+    throw new Error(e.error?.message || `API 오류 ${r.status}`);
+  }
+  const d = await r.json();
+  return d.choices[0].message;
 }
 
 async function execSched(a) {
   try {
-    const body = { s_name:a.s_name, s_date:a.s_date?new Date(a.s_date).toISOString():null, s_category:a.s_category||'기타', s_content:a.s_content||null, s_keywords:a.s_keywords?.length?a.s_keywords:null, s_end:false };
-    await SION.db.insert('schedule', body);
+    const body = {
+      title: a.title,
+      due_at: a.due_at ? new Date(a.due_at).toISOString() : null,
+      category: a.category || '기타',
+      content: a.content || null,
+      location: a.location || null,
+      tags: a.tags?.length ? a.tags : null,
+      is_done: false
+    };
+    await SION.db.insert('schedules', body);
     await loadToday();
-    return { type:'action_ok', at:'schedule', content:`✅ 일정이 추가됐어요`, detail:`**${a.s_name}** · ${a.s_category||'기타'} · ${a.s_date?a.s_date.slice(0,16).replace('T',' '):'시간 미정'}` };
+    return { type:'action_ok', at:'schedule', content:`✅ 일정이 추가됐어요`, detail:`**${a.title}** · ${a.category||'기타'} · ${a.due_at?a.due_at.slice(0,16).replace('T',' '):'시간 미정'}` };
   } catch(e) { return { type:'action_err', content:`일정 추가 실패: ${e.message}` }; }
 }
 
 async function execVault(a) {
   try {
-    await SION.db.insert('vault', { v_title:a.v_title, v_content:a.v_content||null, v_category:a.v_category||'기타', v_tags:a.v_tags?.length?a.v_tags:null, v_is_pinned:false });
-    return { type:'action_ok', at:'vault', content:`✅ 자료가 보관됐어요`, detail:`**${a.v_title}** · ${a.v_category||'기타'}` };
+    await SION.db.insert('vault_items', {
+      title: a.title,
+      content: a.content || null,
+      category: a.category || '기타',
+      tags: a.tags?.length ? a.tags : null,
+      is_pinned: false
+    });
+    return { type:'action_ok', at:'vault', content:`✅ 자료가 보관됐어요`, detail:`**${a.title}** · ${a.category||'기타'}` };
   } catch(e) { return { type:'action_err', content:`자료 저장 실패: ${e.message}` }; }
 }
 
-// 마크다운 변환
 function md(s) {
   if (!s) return '';
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
@@ -325,8 +338,7 @@ function md(s) {
     .replace(/\n/g,'<br>');
 }
 
-// 메시지 추가
-function addMsg(role, result, t) {
+function addMsg(role, payload, t) {
   const el = document.getElementById('chat-msgs');
   document.getElementById('chat-empty')?.remove();
 
@@ -335,126 +347,100 @@ function addMsg(role, result, t) {
   const av = `<div class="msg-av">${role==='assistant'?'SI':'ME'}</div>`;
 
   let bub = '';
-  if (typeof result === 'string') {
-    bub = `<div class="bubble">${SION.util.esc(result).replace(/\n/g,'<br>')}</div>`;
-  } else if (result.type === 'text') {
-    bub = `<div class="bubble">${md(result.content)}</div>`;
-  } else if (result.type === 'action_ok') {
-    const ico = result.at==='schedule'?'📅':'📁';
-    const lbl = result.at==='schedule'?'일정 추가됨':'자료 저장됨';
-    bub = `<div class="bubble">${md(result.content)}</div>
-      <div class="action-card"><div class="action-card-title">${ico} ${lbl}</div><div>${md(result.detail)}</div></div>`;
+  if (role === 'user') {
+    bub = `<div class="bubble">${SION.util.esc(payload)}</div>`;
   } else {
-    bub = `<div class="bubble" style="color:var(--red)">${SION.util.esc(result.content)}</div>`;
+    const text = payload.text;
+    const actions = payload.actions || [];
+    if (text) bub += `<div class="bubble">${md(text)}</div>`;
+    actions.forEach(a => {
+      if (a.type === 'action_ok') {
+        const ico = a.at==='schedule' ? '📅' : '📁';
+        const lbl = a.at==='schedule' ? '일정 추가됨' : '자료 저장됨';
+        bub += `<div class="action-card"><div class="action-card-title">${ico} ${lbl}</div><div>${md(a.detail)}</div></div>`;
+      } else {
+        bub += `<div class="action-card err"><div class="action-card-title">⚠ 오류</div><div>${md(a.content)}</div></div>`;
+      }
+    });
+    if (!text && !actions.length) bub = `<div class="bubble" style="color:var(--tx-3)">(응답 없음)</div>`;
   }
 
   const time = `<div class="msg-time">${t}</div>`;
-  w.innerHTML = role==='user'
-    ? `${av}<div class="msg-body">${bub}${time}</div>`
-    : `${av}<div class="msg-body">${bub}${time}</div>`;
+  w.innerHTML = `${av}<div class="msg-body">${bub}${time}</div>`;
   el.appendChild(w);
   el.scrollTop = el.scrollHeight;
 }
 
 function showTyping() {
-  document.getElementById('chat-msgs')?.querySelector('#chat-empty')?.remove();
   const el = document.getElementById('chat-msgs');
+  document.getElementById('chat-empty')?.remove();
   const w = document.createElement('div');
   w.className = 'msg assistant'; w.id = 'typing-w';
   w.innerHTML = `<div class="msg-av">SI</div><div class="typing-ind"><div class="tdot"></div><div class="tdot"></div><div class="tdot"></div></div>`;
   el.appendChild(w); el.scrollTop = el.scrollHeight;
 }
 function hideTyping() { document.getElementById('typing-w')?.remove(); }
+function nowTime() { const d=new Date(); return `${PAD(d.getHours())}:${PAD(d.getMinutes())}`; }
 
-// 전송
 async function send(text) {
   if (!text.trim() || thinking) return;
   thinking = true;
-  const t = `${PAD(new Date().getHours())}:${PAD(new Date().getMinutes())}`;
   const sendBtn = document.getElementById('send-btn');
   const ta = document.getElementById('chat-ta');
   sendBtn.disabled = true; ta.value = ''; ta.style.height = 'auto'; updateBtn();
 
-  addMsg('user', text, t);
+  addMsg('user', text, nowTime());
   msgs.push({ role:'user', content:text });
   showTyping();
   document.getElementById('st-label').textContent = '생각하는 중...';
 
   try {
-    const raw = await callGroq(msgs);
-    hideTyping();
-    const result = await processReply(raw);
-    const t2 = `${PAD(new Date().getHours())}:${PAD(new Date().getMinutes())}`;
-    addMsg('assistant', result, t2);
+    const msg = await callOpenAI(msgs, true);
+    let actionResults = [];
 
-    const aiText = result.type==='text' ? raw : (result.content + (result.detail?' · '+result.detail:''));
-    msgs.push({ role:'assistant', content:aiText });
+    if (msg.tool_calls?.length) {
+      msgs.push({ role:'assistant', content: msg.content || null, tool_calls: msg.tool_calls });
 
-    if (result.type==='action_ok') { renderMiniSched(); loadStats(); }
+      for (const tc of msg.tool_calls) {
+        let args = {};
+        try { args = JSON.parse(tc.function.arguments || '{}'); } catch(e) {}
+        let result;
+        if (tc.function.name === 'add_schedule') result = await execSched(args);
+        else if (tc.function.name === 'add_vault') result = await execVault(args);
+        else result = { type:'action_err', content:'알 수 없는 요청이에요.' };
 
-    await saveConv(text, aiText);
+        actionResults.push(result);
+        msgs.push({ role:'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+      }
+
+      const finalMsg = await callOpenAI(msgs, false);
+      const finalText = finalMsg.content || (actionResults.every(r=>r.type==='action_ok') ? '요청하신 작업을 모두 완료했어요.' : '일부 작업에서 문제가 있었어요.');
+      msgs.push({ role:'assistant', content: finalText });
+
+      hideTyping();
+      addMsg('assistant', { text: finalText, actions: actionResults }, nowTime());
+
+      if (actionResults.some(r=>r.type==='action_ok')) { renderMiniSched(); loadStats(); }
+    } else {
+      msgs.push({ role:'assistant', content: msg.content });
+      hideTyping();
+      addMsg('assistant', { text: msg.content, actions: [] }, nowTime());
+    }
+
     document.getElementById('st-label').textContent = '온라인 · 명령을 기다리는 중';
   } catch(e) {
     hideTyping();
-    addMsg('assistant', { type:'action_err', content:`오류: ${e.message}` }, t);
+    addMsg('assistant', { text:null, actions:[{type:'action_err', content:`오류: ${e.message}`}] }, nowTime());
     document.getElementById('st-label').textContent = '오류 발생';
     SION.ui.toast(e.message, 'error');
   }
   thinking = false; sendBtn.disabled = false; ta.focus();
 }
 
-// 대화 저장
-async function saveConv(userMsg, aiMsg) {
-  try {
-    const title = userMsg.slice(0,40)+(userMsg.length>40?'...':'');
-    if (convId) {
-      await SION.db.update('conversation', `id=eq.${convId}`, { c_messages:msgs, c_title:title });
-    } else {
-      const res = await SION.db.insert('conversation', { c_title:title, c_messages:msgs, c_model:document.getElementById('model-sel').value, c_tokens:0 });
-      const item = Array.isArray(res)?res[0]:res;
-      if (item) convId = item.id;
-    }
-    loadConvs();
-  } catch(e) { console.warn('저장 실패:', e.message); }
-}
-
-// 대화 목록
-async function loadConvs() {
-  try {
-    const convs = await SION.db.select('conversation','order=updated_at.desc&limit=12');
-    document.getElementById('conv-total').textContent = `${convs.length}건`;
-    const el = document.getElementById('conv-list');
-    if (!convs.length) { el.innerHTML = `<div style="font-size:.76rem;color:var(--tx-4);padding:5px 0">대화 기록이 없습니다</div>`; return; }
-    el.innerHTML = convs.map(c => {
-      const d = new Date(c.updated_at);
-      const tl = `${PAD(d.getMonth()+1)}/${PAD(d.getDate())} ${PAD(d.getHours())}:${PAD(d.getMinutes())}`;
-      const cnt = Array.isArray(c.c_messages)?Math.floor(c.c_messages.length/2):0;
-      return `<div class="conv-item ${c.id===convId?'active':''}" data-id="${c.id}" data-msgs='${JSON.stringify(c.c_messages||[])}'>
-        <div class="conv-title">${SION.util.esc(c.c_title||'대화')}</div>
-        <div class="conv-meta"><span>${tl}</span><span>${cnt}턴</span></div>
-      </div>`;
-    }).join('');
-    el.querySelectorAll('.conv-item').forEach(item => {
-      item.addEventListener('click', () => {
-        const id = item.dataset.id;
-        const m = JSON.parse(item.dataset.msgs||'[]');
-        convId = id; msgs = m;
-        const el2 = document.getElementById('chat-msgs');
-        el2.innerHTML = '';
-        m.forEach(msg => {
-          addMsg(msg.role, msg.role==='user'?msg.content:{type:'text',content:msg.content}, '—');
-        });
-        document.querySelectorAll('.conv-item').forEach(c=>c.classList.toggle('active',c.dataset.id===id));
-      });
-    });
-  } catch(e) {}
-}
-
-// 오늘 일정 로드
 async function loadToday() {
   const s=new Date();s.setHours(0,0,0,0);
   const e=new Date();e.setHours(23,59,59,999);
-  try { todayData = await SION.db.select('schedule',`s_date=gte.${SION.date.toISO(s)}&s_date=lte.${SION.date.toISO(e)}&order=s_date.asc&limit=8`); }
+  try { todayData = await SION.db.select('schedules',`due_at=gte.${SION.date.toISO(s)}&due_at=lte.${SION.date.toISO(e)}&order=due_at.asc&limit=8`); }
   catch(err) { todayData = []; }
 }
 
@@ -462,12 +448,12 @@ function renderMiniSched() {
   const el = document.getElementById('mini-sched');
   if (!todayData.length) { el.innerHTML = `<div style="font-size:.74rem;color:var(--tx-4);padding:3px 0">오늘 일정 없음</div>`; return; }
   el.innerHTML = todayData.map(item => `
-    <div class="msched-item ${item.s_end?'done':''}" data-id="${item.id}">
-      <div class="mchk ${item.s_end?'done':''}" data-id="${item.id}">
-        ${item.s_end?`<svg width="7" height="7" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`:''}
+    <div class="msched-item ${item.is_done?'done':''}" data-id="${item.id}">
+      <div class="mchk ${item.is_done?'done':''}" data-id="${item.id}">
+        ${item.is_done?`<svg width="7" height="7" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`:''}
       </div>
-      <span class="msched-name">${SION.util.esc(item.s_name)}</span>
-      <span class="msched-t">${SION.date.fmtDateTime(item.s_date)}</span>
+      <span class="msched-name">${SION.util.esc(item.title)}</span>
+      <span class="msched-t">${SION.date.fmtDateTime(item.due_at)}</span>
     </div>`).join('');
   el.querySelectorAll('.mchk').forEach(btn => {
     btn.addEventListener('click', async e => {
@@ -476,12 +462,12 @@ function renderMiniSched() {
       const item = todayData.find(d=>String(d.id)===id);
       if (!item) return;
       try {
-        await SION.db.update('schedule',`id=eq.${id}`,{s_end:!item.s_end});
-        item.s_end=!item.s_end;
-        btn.closest('.msched-item').classList.toggle('done',item.s_end);
-        btn.classList.toggle('done',item.s_end);
-        btn.innerHTML=item.s_end?`<svg width="7" height="7" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`:'';
-        loadStats(); SION.ui.toast(item.s_end?'완료':'미완료로 변경','success');
+        await SION.db.update('schedules',`id=eq.${id}`,{is_done:!item.is_done});
+        item.is_done=!item.is_done;
+        btn.closest('.msched-item').classList.toggle('done',item.is_done);
+        btn.classList.toggle('done',item.is_done);
+        btn.innerHTML=item.is_done?`<svg width="7" height="7" viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`:'';
+        loadStats(); SION.ui.toast(item.is_done?'완료':'미완료로 변경','success');
       } catch(err) { SION.ui.toast('오류','error'); }
     });
   });
@@ -489,14 +475,14 @@ function renderMiniSched() {
 
 async function loadStats() {
   document.getElementById('ms-today').textContent = todayData.length;
-  document.getElementById('ms-done').textContent  = todayData.filter(d=>d.s_end).length;
+  document.getElementById('ms-done').textContent  = todayData.filter(d=>d.is_done).length;
   try {
     const n=new Date();n.setHours(0,0,0,0);
-    const ex=await SION.db.select('schedule',`s_category=eq.시험&s_end=eq.false&s_date=gte.${SION.date.toISO(n)}&order=s_date.asc&limit=1`);
-    document.getElementById('ms-exam').textContent=ex.length?`D-${Math.round((new Date(ex[0].s_date)-n)/86400000)}`:'—';
+    const ex=await SION.db.select('schedules',`category=eq.시험&is_done=eq.false&due_at=gte.${SION.date.toISO(n)}&order=due_at.asc&limit=1`);
+    document.getElementById('ms-exam').textContent=ex.length?`D-${Math.round((new Date(ex[0].due_at)-n)/86400000)}`:'—';
   }catch(e){}
-  try{const v=await SION.db.select('vault','select=id&limit=500');document.getElementById('ms-vault').textContent=v.length;}catch(e){}
-  const nb=document.getElementById('nb-sched');if(nb)nb.textContent=todayData.filter(d=>!d.s_end).length;
+  try{const v=await SION.db.select('vault_items','select=id&limit=500');document.getElementById('ms-vault').textContent=v.length;}catch(e){}
+  const nb=document.getElementById('nb-sched');if(nb)nb.textContent=todayData.filter(d=>!d.is_done).length;
 }
 
 function updateBtn() {
@@ -511,28 +497,26 @@ document.getElementById('chat-ta').addEventListener('keydown',function(e){
 document.getElementById('send-btn').addEventListener('click',()=>{const v=document.getElementById('chat-ta').value.trim();if(v)send(v);});
 document.querySelectorAll('.qcmd').forEach(b=>b.addEventListener('click',()=>send(b.dataset.cmd)));
 document.getElementById('btn-new-chat').addEventListener('click',()=>{
-  msgs=[];convId=null;
+  msgs=[];
   const el=document.getElementById('chat-msgs');
   el.innerHTML=`<div class="chat-empty" id="chat-empty">
     <div class="empty-icon">✦</div>
     <div class="empty-title">SION에게 무엇이든 물어보세요</div>
-    <div class="empty-sub">일정 추가, 자료 보관, 정보 검색, 일반 대화 모두 가능합니다.</div>
+    <div class="empty-sub">일정 추가, 자료 보관, 정보 검색, 일반 대화 모두 가능합니다.<br>한 문장에 여러 요청을 함께 담아도 SION이 알아서 나눠 처리합니다.</div>
     <div class="quick-cmds">
       <button class="qcmd" data-cmd="오늘 일정 알려줘">📋 오늘 일정</button>
       <button class="qcmd" data-cmd="내일 오후 2시에 수학 시험 일정 추가해줘">📅 일정 추가</button>
       <button class="qcmd" data-cmd="이번 주 시험이 있어?">📝 시험 확인</button>
-      <button class="qcmd" data-cmd="최근 자료 뭐가 있어?">📁 자료 확인</button>
+      <button class="qcmd" data-cmd="내일 오후 2시 수학 시험 일정 추가하고, 파이썬 딕셔너리 개념도 자료로 저장해줘">🧠 복수 명령 예시</button>
     </div>
   </div>`;
   el.querySelectorAll('.qcmd').forEach(b=>b.addEventListener('click',()=>send(b.dataset.cmd)));
-  document.querySelectorAll('.conv-item').forEach(c=>c.classList.remove('active'));
 });
 
 (async()=>{
   await loadToday();
   renderMiniSched();
   await loadStats();
-  await loadConvs();
 })();
 </script>
 </body>
