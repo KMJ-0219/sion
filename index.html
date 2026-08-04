@@ -201,10 +201,11 @@
 <script>
 SION.ui.initSidebar();
 
-/* ⚠️ API 키가 프론트엔드에 노출됩니다. 실제 서비스로 확장 시
-   서버리스 함수(Edge Function 등) 뒤로 옮기는 걸 권장합니다. */
-const OPENAI_KEY = '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';
-const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+/* OpenAI를 브라우저에서 직접 호출하면 CORS에 막혀서 요청 자체가 안 나감.
+   그래서 Supabase Edge Function을 중계 서버로 두고, 여기서는 그 함수만 호출함.
+   → OpenAI 키는 이제 여기(클라이언트)에 존재하지 않고 Edge Function 시크릿에만 있음.
+   ⚠️ 아래 프로젝트 ref는 실제 Supabase 프로젝트에 맞게 확인해서 넣어야 함 (sion.js의 SB_URL과 동일한 프로젝트). */
+const EDGE_FN_URL = 'https://cszwasbxeczeocmdifqj.supabase.co/functions/v1/openai-chat';
 const MODEL = 'gpt-4o-mini';
 
 const PAD = SION.util.pad;
@@ -285,16 +286,16 @@ async function callOpenAI(conversation, useTools) {
     body.tool_choice = 'auto';
     body.parallel_tool_calls = true;
   }
-  const r = await fetch(OPENAI_URL, {
+  // OpenAI를 직접 부르지 않고 Edge Function(EDGE_FN_URL)을 통해 대신 호출
+  const r = await fetch(EDGE_FN_URL, {
     method: 'POST',
-    headers: { 'Authorization': `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
-  if (!r.ok) {
-    const e = await r.json().catch(()=>({}));
-    throw new Error(e.error?.message || `API 오류 ${r.status}`);
+  const d = await r.json().catch(()=>({}));
+  if (!r.ok || d.error) {
+    throw new Error(d.error?.message || `API 오류 ${r.status}`);
   }
-  const d = await r.json();
   return d.choices[0].message;
 }
 
