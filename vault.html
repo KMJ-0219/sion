@@ -6,198 +6,61 @@
   <title>SION — 자료보관함</title>
   <link rel="stylesheet" href="sion.css"/>
   <style>
-    /* ── 자료보관함 전용 ───────────────────── */
-    .vault-layout {
-      display: grid;
-      grid-template-columns: 240px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
+.vault-wrap{display:flex;height:calc(100vh - 56px);overflow:hidden}
+.vault-side{width:230px;flex-shrink:0;border-right:1px solid var(--line-sub);background:var(--bg-raised);padding:14px;display:flex;flex-direction:column;gap:16px;overflow-y:auto}
+.vault-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.vault-toolbar{padding:12px 20px;border-bottom:1px solid var(--line-sub);display:flex;align-items:center;gap:10px;flex-wrap:wrap;row-gap:8px}
+.search-box{position:relative;flex:1;min-width:180px;max-width:340px}
+.search-box input{padding-right:30px}
+.search-box svg{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--tx-3);pointer-events:none}
+.sort-sel{background:var(--bg-float);border:1px solid var(--line-mid);border-radius:7px;color:var(--tx-2);font-size:.78rem;padding:6px 9px;outline:none}
+.view-toggle{display:flex;background:var(--bg-raised);border:1px solid var(--line-mid);border-radius:7px;padding:3px;gap:2px}
+.vt-btn{padding:5px 9px;border-radius:5px;border:none;background:none;color:var(--tx-3);cursor:pointer;display:flex;align-items:center;transition:all .15s}
+.vt-btn.active{background:var(--bg-float);color:var(--ac)}
+.vault-body{flex:1;overflow-y:auto;padding:18px 20px}
+.sec-title{font-size:.62rem;font-weight:700;color:var(--tx-3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}
+.cat-rows{display:flex;flex-direction:column;gap:1px}
+.cat-row{display:flex;align-items:center;gap:7px;padding:6px 8px;border-radius:6px;cursor:pointer;color:var(--tx-2);font-size:.8rem;font-weight:500;transition:background .12s,color .12s}
+.cat-row:hover{background:var(--bg-overlay);color:var(--tx-1)}
+.cat-row.active{background:var(--ac-dim);color:var(--ac)}
+.cat-n{margin-left:auto;font-size:.62rem;font-family:var(--font-mono);color:var(--tx-4);background:var(--bg-base);padding:1px 5px;border-radius:8px}
+.cat-row.active .cat-n{color:var(--ac);background:rgba(0,196,160,.1)}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:5px}
+.tcloud-tag{padding:3px 9px;border-radius:20px;background:var(--bg-float);border:1px solid var(--line-mid);color:var(--tx-2);font-size:.7rem;cursor:pointer;transition:all .12s}
+.tcloud-tag:hover{border-color:var(--ac);color:var(--ac)}
+.tcloud-tag.active{background:var(--ac-dim);border-color:var(--ac);color:var(--ac)}
 
-    /* 왼쪽: 카테고리 패널 */
-    .vault-left { display: flex; flex-direction: column; gap: 12px; }
-    .cat-list { display: flex; flex-direction: column; gap: 2px; }
-    .cat-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      cursor: pointer;
-      color: var(--tx-2);
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: background 0.12s, color 0.12s;
-    }
-    .cat-item:hover { background: var(--bg-overlay); color: var(--tx-1); }
-    .cat-item.active { background: var(--ac-dim); color: var(--ac); }
-    .cat-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .cat-count {
-      margin-left: auto;
-      font-size: 0.68rem;
-      font-family: var(--font-mono);
-      color: var(--tx-3);
-    }
-    .cat-item.active .cat-count { color: var(--ac); }
+.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.list-view-v{display:flex;flex-direction:column;gap:8px}
 
-    /* 오른쪽: 자료 목록 */
-    .vault-right { display: flex; flex-direction: column; gap: 14px; }
-    .vault-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+.v-card{background:var(--bg-raised);border:1px solid var(--line-mid);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .12s,transform .12s;display:flex;flex-direction:column;gap:7px;position:relative}
+.v-card:hover{border-color:var(--line-hi);transform:translateY(-1px)}
+.v-card-top{display:flex;align-items:flex-start;gap:6px}
+.v-pin-btn{width:22px;height:22px;border-radius:6px;border:none;background:transparent;color:var(--tx-4);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .12s}
+.v-pin-btn:hover{background:var(--bg-overlay);color:var(--tx-2)}
+.v-pin-btn.pinned{color:#fbbf24}
+.v-title{font-size:.9rem;font-weight:600;color:var(--tx-1);flex:1;line-height:1.4;word-break:break-word}
+.v-preview{font-size:.78rem;color:var(--tx-3);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.v-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
+.v-tags{display:flex;gap:4px;flex-wrap:wrap}
+.v-tag{font-size:.6rem;padding:1px 6px;border-radius:10px;background:var(--bg-overlay);color:var(--tx-3)}
+.v-date{font-size:.62rem;color:var(--tx-4);font-family:var(--font-mono);margin-left:auto}
+.v-acts{position:absolute;top:10px;right:10px;display:flex;gap:2px;opacity:0;transition:opacity .12s}
+.v-card:hover .v-acts{opacity:1}
 
-    /* 카드 그리드 */
-    .vault-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 12px;
-    }
-    .vault-card {
-      background: var(--bg-raised);
-      border: 1px solid var(--line-mid);
-      border-radius: var(--radius);
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      cursor: pointer;
-      transition: border-color 0.15s, transform 0.15s;
-      position: relative;
-    }
-    .vault-card:hover { border-color: var(--line-hi); transform: translateY(-1px); }
-    .vault-card.pinned { border-color: var(--ac-dim); }
-    .vault-card-head {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-    }
-    .vault-cat-icon {
-      font-size: 1.1rem;
-      flex-shrink: 0;
-      line-height: 1;
-      margin-top: 1px;
-    }
-    .vault-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--tx-1);
-      flex: 1;
-      line-height: 1.4;
-      word-break: break-word;
-    }
-    .vault-pin {
-      flex-shrink: 0;
-      font-size: 0.75rem;
-      opacity: 0.5;
-    }
-    .vault-preview {
-      font-size: 0.78rem;
-      color: var(--tx-2);
-      line-height: 1.6;
-      overflow: hidden;
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-    }
-    .vault-card-foot {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: auto;
-    }
-    .vault-date {
-      font-size: 0.68rem;
-      color: var(--tx-4);
-      font-family: var(--font-mono);
-      margin-left: auto;
-    }
+.list-view-v .v-card{flex-direction:row;align-items:center;gap:12px;padding:10px 14px}
+.list-view-v .v-title{font-size:.85rem}
+.list-view-v .v-preview{-webkit-line-clamp:1;flex:1;margin:0}
+.list-view-v .v-meta{margin-top:0;flex-shrink:0}
 
-    /* 목록 보기 */
-    .vault-list-view { display: flex; flex-direction: column; gap: 6px; }
-    .vault-list-item {
-      background: var(--bg-raised);
-      border: 1px solid var(--line-mid);
-      border-radius: var(--radius);
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: border-color 0.15s;
-    }
-    .vault-list-item:hover { border-color: var(--line-hi); }
-    .vault-list-item.pinned { border-color: var(--ac-dim); }
-    .vault-list-title {
-      flex: 1;
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--tx-1);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-    .vault-list-actions {
-      display: flex;
-      gap: 4px;
-      opacity: 0;
-      transition: opacity 0.15s;
-    }
-    .vault-list-item:hover .vault-list-actions { opacity: 1; }
+.fab-add{position:fixed;bottom:26px;right:26px;width:52px;height:52px;border-radius:50%;background:var(--ac);color:var(--bg-base);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 18px rgba(0,196,160,.35);transition:all .15s;z-index:60}
+.fab-add:hover{background:#00ddb5;transform:scale(1.05)}
 
-    /* 자료 상세 모달 */
-    .vault-detail-modal .modal { max-width: 680px; }
-    .vault-detail-content {
-      font-size: 0.875rem;
-      color: var(--tx-2);
-      line-height: 1.8;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 40vh;
-      overflow-y: auto;
-    }
-    .vault-url-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--ac);
-      padding: 5px 10px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--ac-dim);
-      background: var(--ac-soft);
-      transition: all 0.15s;
-      word-break: break-all;
-    }
-    .vault-url-link:hover { background: var(--ac-dim); }
-
-    /* 카테고리 편집 모달 */
-    .cat-edit-list { display: flex; flex-direction: column; gap: 6px; }
-    .cat-edit-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-overlay);
-    }
-
-    @media (max-width: 900px) {
-      .vault-layout { grid-template-columns: 1fr; }
-      .vault-left { display: none; }
-    }
+@media(max-width:900px){.vault-side{display:none}}
   </style>
 </head>
 <body>
 <div class="app">
-
-  <!-- 사이드바 -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <div class="brand-mark">SI</div>
@@ -219,207 +82,117 @@
         <span class="nav-label">자료보관함</span>
       </a>
       <span class="nav-section-label">예정</span>
-      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
+      <a href="#" class="nav-link" style="opacity:.35;pointer-events:none">
         <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         <span class="nav-label">대화보관함</span>
-      </a>
-      <a href="#" class="nav-link" style="opacity:0.4;pointer-events:none">
-        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
-        <span class="nav-label">SION AI</span>
       </a>
     </nav>
     <div class="sidebar-footer">
       <button class="sidebar-toggle" id="sidebarToggle">
         <svg class="toggle-ico nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7M21 19l-7-7 7-7"/></svg>
-        <span style="font-size:0.8rem;color:var(--tx-3)">접기</span>
+        <span style="font-size:.8rem;color:var(--tx-3)">접기</span>
       </button>
     </div>
   </aside>
 
-  <!-- 메인 -->
   <div class="content" id="content">
     <div class="topbar">
       <span class="topbar-path">SION / 관리 /</span>
       <span class="topbar-title">자료보관함</span>
       <div class="topbar-right">
-        <button class="btn btn-ghost" id="btn-manage-cat">카테고리 관리</button>
-        <button class="btn btn-primary" id="btn-add-vault">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        <button class="btn btn-primary" id="btn-add-top">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           자료 추가
         </button>
       </div>
     </div>
 
-    <div class="page">
-      <div class="vault-layout">
-
-        <!-- 왼쪽 카테고리 패널 -->
-        <div class="vault-left">
-          <div class="card" style="padding:14px">
-            <div class="card-header" style="margin-bottom:10px">
-              <span class="card-title">카테고리</span>
-              <button class="btn-icon" id="btn-add-cat-side" title="카테고리 추가">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-              </button>
-            </div>
-            <div class="cat-list" id="cat-list-sidebar"></div>
-          </div>
-
-          <!-- 검색 히스토리 / 태그 -->
-          <div class="card card-sm">
-            <div class="card-header" style="margin-bottom:8px">
-              <span class="card-title">전체 태그</span>
-            </div>
-            <div class="tag-list" id="all-tags-list" style="gap:4px"></div>
+    <div class="vault-wrap">
+      <div class="vault-side">
+        <div>
+          <div class="sec-title">카테고리</div>
+          <div class="cat-rows" id="cat-rows">
+            <div class="cat-row active" data-cat="">📋 전체<span class="cat-n" id="cn-all">0</span></div>
           </div>
         </div>
+        <div>
+          <div class="sec-title">태그</div>
+          <div class="tag-cloud" id="tag-cloud"><div style="font-size:.74rem;color:var(--tx-4)">태그 없음</div></div>
+        </div>
+        <div>
+          <div class="sec-title">고정됨</div>
+          <button class="cat-row" id="pin-filter" data-pin="0" style="width:100%">📌 고정 자료만 보기</button>
+        </div>
+      </div>
 
-        <!-- 오른쪽 자료 목록 -->
-        <div class="vault-right">
-          <!-- 툴바 -->
-          <div class="vault-toolbar">
-            <div style="position:relative;flex:1;min-width:180px;max-width:360px">
-              <input class="input" type="text" id="vault-search" placeholder="제목, 내용, 태그 검색..."/>
-              <svg style="position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--tx-3)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </div>
-            <div class="dropdown">
-              <button class="btn btn-ghost" id="sort-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="6" y1="12" x2="18" y2="12"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-                <span id="sort-label">최신순</span>
-              </button>
-              <div class="dropdown-menu" id="sort-menu">
-                <button class="dropdown-item active" data-sort="updated_at.desc">최신순</button>
-                <button class="dropdown-item" data-sort="updated_at.asc">오래된순</button>
-                <button class="dropdown-item" data-sort="v_title.asc">제목순</button>
-                <button class="dropdown-item" data-sort="v_is_pinned.desc">고정 먼저</button>
-              </div>
-            </div>
-            <div class="dropdown">
-              <button class="btn btn-ghost" id="view-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                카드
-              </button>
-              <div class="dropdown-menu" id="view-menu-v">
-                <button class="dropdown-item active" data-vview="grid">카드 보기</button>
-                <button class="dropdown-item" data-vview="list">목록 보기</button>
-              </div>
-            </div>
-            <span style="font-size:0.75rem;color:var(--tx-3);font-family:var(--font-mono)" id="vault-count"></span>
+      <div class="vault-main">
+        <div class="vault-toolbar">
+          <div class="search-box">
+            <input class="input" type="text" id="v-search" placeholder="제목, 내용, 태그 검색..."/>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </div>
-
-          <!-- 자료 목록 -->
-          <div id="vault-items">
-            <div class="vault-grid" id="vault-grid">
-              <div class="skeleton" style="height:120px;border-radius:var(--radius)"></div>
-              <div class="skeleton" style="height:120px;border-radius:var(--radius)"></div>
-              <div class="skeleton" style="height:120px;border-radius:var(--radius)"></div>
-            </div>
+          <select class="sort-sel" id="v-sort">
+            <option value="new">최신순</option>
+            <option value="old">오래된순</option>
+            <option value="title">이름순</option>
+          </select>
+          <span style="font-size:.72rem;color:var(--tx-3);font-family:var(--font-mono)" id="v-count">0건</span>
+          <div class="view-toggle" style="margin-left:auto">
+            <button class="vt-btn active" data-vt="grid">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            </button>
+            <button class="vt-btn" data-vt="list">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
           </div>
+        </div>
+        <div class="vault-body" id="vault-body">
+          <div class="skeleton" style="height:120px;margin-bottom:12px"></div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 자료 상세 모달 -->
-<div class="modal-backdrop vault-detail-modal" id="modal-detail">
-  <div class="modal" style="max-width:680px">
-    <div class="modal-head">
-      <div style="flex:1">
-        <div style="font-size:0.7rem;color:var(--tx-3);margin-bottom:4px" id="det-cat-label"></div>
-        <div class="modal-title" id="det-title"></div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn btn-ghost btn-sm" id="det-pin">📌 고정</button>
-        <button class="btn btn-ghost btn-sm" id="det-edit">✏ 수정</button>
-        <button class="btn-icon" onclick="SION.ui.closeModal('modal-detail')">✕</button>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div id="det-url-wrap" style="display:none">
-        <a class="vault-url-link" id="det-url" target="_blank" rel="noopener">🔗 <span id="det-url-text"></span></a>
-      </div>
-      <div id="det-content-wrap">
-        <div class="vault-detail-content" id="det-content"></div>
-      </div>
-      <div id="det-tags-wrap" style="display:none">
-        <div class="tag-list" id="det-tags"></div>
-      </div>
-      <div style="font-size:0.72rem;color:var(--tx-4);font-family:var(--font-mono)" id="det-meta"></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-danger" id="det-delete">삭제</button>
-      <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-detail')">닫기</button>
-    </div>
-  </div>
-</div>
+<button class="fab-add" id="fab-add" title="자료 추가">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
 
-<!-- 자료 추가/수정 모달 -->
+<!-- 추가/수정 모달 -->
 <div class="modal-backdrop" id="modal-vault">
   <div class="modal">
     <div class="modal-head">
-      <span class="modal-title" id="vault-modal-title">자료 추가</span>
+      <span class="modal-title" id="modal-title">자료 추가</span>
       <button class="btn-icon" onclick="SION.ui.closeModal('modal-vault')">✕</button>
     </div>
     <div class="modal-body">
-      <input type="hidden" id="vf-id"/>
+      <input type="hidden" id="form-id"/>
       <div class="form-group">
         <label class="input-label">제목 *</label>
-        <input class="input" type="text" id="vf-title" placeholder="자료 제목"/>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div class="form-group">
-          <label class="input-label">카테고리</label>
-          <select class="input" id="vf-category"></select>
-        </div>
-        <div class="form-group">
-          <label class="input-label">URL (선택)</label>
-          <input class="input" type="url" id="vf-url" placeholder="https://..."/>
-        </div>
+        <input class="input" type="text" id="form-title" placeholder="자료 제목"/>
       </div>
       <div class="form-group">
-        <label class="input-label">내용</label>
-        <textarea class="input" id="vf-content" rows="6" placeholder="자유롭게 내용을 작성하세요. 마크다운 지원 예정."></textarea>
+        <label class="input-label">카테고리</label>
+        <input class="input" type="text" id="form-cat" placeholder="예: 화학, 코딩, 아이디어 등"/>
       </div>
       <div class="form-group">
         <label class="input-label">태그 (Enter로 추가)</label>
-        <input class="input" type="text" id="vf-tag-input" placeholder="태그 입력 후 Enter"/>
-        <div class="tag-list" id="vf-tags"></div>
+        <input class="input" type="text" id="form-tag-input" placeholder="태그 입력 후 Enter"/>
+        <div class="tag-list" id="form-tags" style="margin-top:6px"></div>
       </div>
-      <label class="checkbox-wrap" style="margin-top:4px">
-        <div class="checkbox" id="vf-pin-check"><svg width="9" height="9" viewBox="0 0 12 12" id="vf-pin-svg" style="display:none"><polyline points="2,6 5,9 10,3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
-        <span style="font-size:0.82rem;color:var(--tx-2)">상단 고정</span>
-      </label>
+      <div class="form-group">
+        <label class="input-label">내용 *</label>
+        <textarea class="input" id="form-content" rows="7" placeholder="저장할 내용"></textarea>
+      </div>
+      <div class="checkbox-wrap" id="form-pin-wrap">
+        <div class="checkbox" id="form-pin-box"></div>
+        <span style="font-size:.82rem;color:var(--tx-2)">상단에 고정</span>
+      </div>
     </div>
     <div class="modal-foot">
+      <button class="btn btn-danger btn-sm" id="form-del" style="margin-right:auto;display:none">삭제</button>
       <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-vault')">취소</button>
-      <button class="btn btn-primary" id="vf-save">저장</button>
-    </div>
-  </div>
-</div>
-
-<!-- 카테고리 관리 모달 -->
-<div class="modal-backdrop" id="modal-cat">
-  <div class="modal">
-    <div class="modal-head">
-      <span class="modal-title">카테고리 관리</span>
-      <button class="btn-icon" onclick="SION.ui.closeModal('modal-cat')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="cat-edit-list" id="cat-edit-list"></div>
-      <div class="divider"></div>
-      <div style="display:flex;flex-direction:column;gap:8px">
-        <div style="font-size:0.78rem;font-weight:600;color:var(--tx-2)">새 카테고리 추가</div>
-        <div style="display:grid;grid-template-columns:1fr 60px 48px;gap:8px;align-items:center">
-          <input class="input" type="text" id="new-cat-name" placeholder="카테고리명"/>
-          <input class="input" type="color" id="new-cat-color" value="#6c8fff" style="padding:4px"/>
-          <input class="input" type="text" id="new-cat-icon" placeholder="📁" style="text-align:center;font-size:1rem"/>
-        </div>
-        <button class="btn btn-primary" id="btn-add-cat-modal">카테고리 추가</button>
-      </div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-cat')">닫기</button>
+      <button class="btn btn-primary" id="form-save">저장</button>
     </div>
   </div>
 </div>
@@ -427,508 +200,258 @@
 <div id="toast-container"></div>
 <script src="sion.js"></script>
 <script>
-// ============================================================
-//  자료보관함 페이지 로직
-// ============================================================
 SION.ui.initSidebar();
 
-// ── 상태 ─────────────────────────────────────
-let allVaults    = [];
-let categories   = [];
-let filterCat    = '';
-let sortOrder    = 'updated_at.desc';
-let vaultView    = 'grid';
-let searchQ      = '';
-let vfTags       = [];
-let vfPinned     = false;
-let detailItem   = null;
+const V = {
+  all: [],
+  fCat: '', fTag: '', fPin: false, fQ: '',
+  sort: 'new',
+  view: 'grid',
+  fTags: [],
+  formPinned: false,
+};
 
-// ── 초기화 ───────────────────────────────────
-(async () => {
-  await loadCategories();
-  await loadVaults();
-  initControls();
-})();
+(async()=>{ await load(); render(); initControls(); })();
 
-// ── 카테고리 로드 ─────────────────────────────
-async function loadCategories() {
-  try {
-    categories = await SION.db.select('vault_category', 'order=vc_order.asc');
-  } catch(e) {
-    categories = [{ vc_name:'기타', vc_color:'#94a3b8', vc_icon:'📁' }];
-  }
-  renderCategorySidebar();
-  renderCategorySelect();
-}
-
-function renderCategorySidebar() {
-  // 카테고리별 카운트
-  const counts = {};
-  allVaults.forEach(v => {
-    counts[v.v_category] = (counts[v.v_category] || 0) + 1;
-  });
-  const total = allVaults.length;
-
-  const el = document.getElementById('cat-list-sidebar');
-  el.innerHTML = `
-    <div class="cat-item ${filterCat === '' ? 'active' : ''}" data-cat="">
-      <span style="font-size:0.9rem">🗂️</span>
-      <span>전체</span>
-      <span class="cat-count">${total}</span>
-    </div>
-  ` + categories.filter(c => c.vc_name !== '전체').map(c => `
-    <div class="cat-item ${filterCat === c.vc_name ? 'active' : ''}" data-cat="${SION.util.esc(c.vc_name)}">
-      <span class="cat-dot" style="background:${SION.util.esc(c.vc_color)}"></span>
-      <span>${SION.util.esc(c.vc_name)}</span>
-      <span class="cat-count">${counts[c.vc_name] || 0}</span>
-    </div>
-  `).join('');
-
-  el.querySelectorAll('.cat-item[data-cat]').forEach(item => {
-    item.addEventListener('click', () => {
-      filterCat = item.dataset.cat;
-      renderCategorySidebar();
-      renderVaults();
-    });
-  });
-}
-
-function renderCategorySelect() {
-  const sel = document.getElementById('vf-category');
-  sel.innerHTML = categories.filter(c => c.vc_name !== '전체').map(c =>
-    `<option value="${SION.util.esc(c.vc_name)}">${SION.util.esc(c.vc_name)}</option>`
-  ).join('');
-}
-
-// ── 자료 로드 ─────────────────────────────────
-async function loadVaults() {
-  try {
-    const [col, dir] = sortOrder.split('.');
-    allVaults = await SION.db.select('vault', `order=${sortOrder}&limit=200`);
-    renderVaults();
-    renderAllTags();
-    renderCategorySidebar();
-  } catch(e) {
-    SION.ui.toast('자료 로드 실패: ' + e.message, 'error');
-    document.getElementById('vault-grid').innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-text">데이터를 불러올 수 없습니다</div></div>`;
+async function load(){
+  const el = document.getElementById('vault-body');
+  try{
+    V.all = await SION.db.select('vault_items','order=created_at.desc&limit=1000');
+  }catch(e){
+    V.all = [];
+    SION.ui.toast('로드 실패','error');
   }
 }
 
-function renderVaults() {
-  let data = [...allVaults];
-
-  // 카테고리 필터
-  if (filterCat) data = data.filter(v => v.v_category === filterCat);
-  // 검색
-  if (searchQ) {
-    const q = searchQ.toLowerCase();
-    data = data.filter(v =>
-      v.v_title?.toLowerCase().includes(q) ||
-      v.v_content?.toLowerCase().includes(q) ||
-      v.v_tags?.some(t => t.toLowerCase().includes(q))
+function getFiltered(){
+  let items = [...V.all];
+  if (V.fCat) items = items.filter(i=>i.category===V.fCat);
+  if (V.fTag) items = items.filter(i=>i.tags?.includes(V.fTag));
+  if (V.fPin) items = items.filter(i=>i.is_pinned);
+  if (V.fQ){
+    const q = V.fQ.toLowerCase();
+    items = items.filter(i =>
+      i.title?.toLowerCase().includes(q) ||
+      i.content?.toLowerCase().includes(q) ||
+      i.tags?.some(t=>t.toLowerCase().includes(q))
     );
   }
+  items.sort((a,b)=>{
+    if (V.sort==='new')  return new Date(b.created_at)-new Date(a.created_at);
+    if (V.sort==='old')  return new Date(a.created_at)-new Date(b.created_at);
+    if (V.sort==='title') return (a.title||'').localeCompare(b.title||'','ko');
+    return 0;
+  });
+  // 고정 항목 우선 정렬 (전체 정렬 기준을 해치지 않는 선에서)
+  items.sort((a,b)=> (b.is_pinned?1:0) - (a.is_pinned?1:0));
+  return items;
+}
 
-  document.getElementById('vault-count').textContent = `${data.length}건`;
+function render(){
+  renderSidebar();
+  const items = getFiltered();
+  document.getElementById('v-count').textContent = `${items.length}건`;
+  const el = document.getElementById('vault-body');
 
-  const container = document.getElementById('vault-items');
-
-  if (data.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state" style="padding:60px 0">
-        <div class="empty-state-icon">📁</div>
-        <div class="empty-state-text">자료가 없습니다</div>
-        <div class="empty-state-sub">새 자료를 추가해보세요</div>
-        <button class="btn btn-primary" onclick="openAddVault()" style="margin-top:12px">자료 추가</button>
-      </div>`;
+  if (!items.length){
+    el.innerHTML = `<div class="empty-state" style="padding:80px 20px">
+      <div class="empty-state-icon">📁</div>
+      <div class="empty-state-text">조건에 맞는 자료가 없습니다</div>
+      <div class="empty-state-sub">우측 하단의 + 버튼으로 자료를 추가해보세요</div>
+    </div>`;
     return;
   }
 
-  if (vaultView === 'list') {
-    container.innerHTML = `<div class="vault-list-view">${data.map(v => renderVaultListItem(v)).join('')}</div>`;
-  } else {
-    container.innerHTML = `<div class="vault-grid">${data.map(v => renderVaultCard(v)).join('')}</div>`;
-  }
+  el.innerHTML = `<div class="${V.view==='grid'?'grid-view':'list-view-v'}">${items.map(buildCard).join('')}</div>`;
+  bindCardEvents(el);
+}
 
-  // 이벤트 바인딩
-  container.querySelectorAll('[data-vault-id]').forEach(el => {
-    el.addEventListener('click', e => {
-      if (e.target.closest('.vault-list-actions') || e.target.closest('.v-edit') || e.target.closest('.v-del')) return;
-      openDetail(el.dataset.vaultId);
+function buildCard(r){
+  const dt = SION.date.fmtDate(r.created_at);
+  return `<div class="v-card" data-id="${r.id}">
+    <div class="v-acts">
+      <button class="btn-icon btn-sm edit-btn" data-id="${r.id}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="btn-icon btn-sm del-btn" data-id="${r.id}">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+      </button>
+    </div>
+    <div class="v-card-top">
+      <button class="v-pin-btn ${r.is_pinned?'pinned':''}" data-id="${r.id}" title="고정">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="${r.is_pinned?'currentColor':'none'}" stroke="currentColor" stroke-width="2"><path d="M12 2l1.5 5.5L19 9l-4 3.5L16 18l-4-3-4 3 1-5.5L5 9l5.5-1.5z"/></svg>
+      </button>
+      <div class="v-title">${SION.util.esc(r.title)}</div>
+    </div>
+    <div class="v-preview">${SION.util.esc(r.content)}</div>
+    <div class="v-meta">
+      ${r.category?`<span class="badge badge-기타" style="background:var(--ac-dim);color:var(--ac)">${SION.util.esc(r.category)}</span>`:''}
+      ${r.tags?.length?`<div class="v-tags">${r.tags.slice(0,4).map(t=>`<span class="v-tag">${SION.util.esc(t)}</span>`).join('')}</div>`:''}
+      <span class="v-date">${dt}</span>
+    </div>
+  </div>`;
+}
+
+function bindCardEvents(root){
+  root.querySelectorAll('.v-card').forEach(card=>{
+    card.addEventListener('click', e=>{
+      if (e.target.closest('.v-acts') || e.target.closest('.v-pin-btn')) return;
+      openEdit(card.dataset.id);
     });
   });
-  container.querySelectorAll('.v-edit').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); openEditVault(btn.dataset.id); });
-  });
-  container.querySelectorAll('.v-del').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); deleteVault(btn.dataset.id); });
-  });
-  container.querySelectorAll('.v-pin').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); togglePin(btn.dataset.id); });
-  });
+  root.querySelectorAll('.edit-btn').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation();openEdit(b.dataset.id);}));
+  root.querySelectorAll('.del-btn').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation();del(b.dataset.id);}));
+  root.querySelectorAll('.v-pin-btn').forEach(b=>b.addEventListener('click', e=>{e.stopPropagation();togglePin(b.dataset.id);}));
 }
 
-function getCatInfo(name) {
-  return categories.find(c => c.vc_name === name) || { vc_color:'#94a3b8', vc_icon:'📁' };
-}
-
-function renderVaultCard(v) {
-  const cat = getCatInfo(v.v_category);
-  return `
-    <div class="vault-card ${v.v_is_pinned ? 'pinned' : ''}" data-vault-id="${v.id}">
-      <div class="vault-card-head">
-        <span class="vault-cat-icon">${cat.vc_icon}</span>
-        <span class="vault-title">${SION.util.esc(v.v_title)}</span>
-        ${v.v_is_pinned ? '<span class="vault-pin">📌</span>' : ''}
-      </div>
-      ${v.v_content ? `<div class="vault-preview">${SION.util.esc(v.v_content)}</div>` : ''}
-      ${v.v_url ? `<div style="font-size:0.72rem;color:var(--ac)">🔗 링크 있음</div>` : ''}
-      <div class="vault-card-foot">
-        ${v.v_tags?.length ? `<div class="tag-list" style="gap:3px;margin:0">${v.v_tags.slice(0,3).map(t => `<span class="tag" style="font-size:0.65rem">${SION.util.esc(t)}</span>`).join('')}</div>` : ''}
-        <span class="vault-date">${SION.date.fmtDate(v.updated_at)}</span>
-      </div>
-      <div style="position:absolute;top:10px;right:10px;display:flex;gap:4px;opacity:0;transition:opacity 0.15s" class="vault-card-actions">
-        <button class="btn-icon btn-sm v-pin" data-id="${v.id}" title="${v.v_is_pinned ? '고정 해제' : '고정'}">📌</button>
-        <button class="btn-icon btn-sm v-edit" data-id="${v.id}" title="수정">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="btn-icon btn-sm v-del" data-id="${v.id}" title="삭제">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-        </button>
-      </div>
-    </div>`;
-}
-
-function renderVaultListItem(v) {
-  const cat = getCatInfo(v.v_category);
-  return `
-    <div class="vault-list-item ${v.v_is_pinned ? 'pinned' : ''}" data-vault-id="${v.id}">
-      <span style="font-size:1rem">${cat.vc_icon}</span>
-      <span class="vault-list-title">${SION.util.esc(v.v_title)}</span>
-      ${v.v_is_pinned ? '<span style="font-size:0.75rem">📌</span>' : ''}
-      <span class="badge badge-기타" style="font-size:0.65rem;background:${cat.vc_color}20;color:${cat.vc_color}">${SION.util.esc(v.v_category||'기타')}</span>
-      <span style="font-size:0.7rem;color:var(--tx-4);font-family:var(--font-mono)">${SION.date.fmtDate(v.updated_at)}</span>
-      <div class="vault-list-actions">
-        <button class="btn-icon btn-sm v-pin" data-id="${v.id}">📌</button>
-        <button class="btn-icon btn-sm v-edit" data-id="${v.id}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-        </button>
-        <button class="btn-icon btn-sm v-del" data-id="${v.id}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-        </button>
-      </div>
-    </div>`;
-}
-
-// 카드 hover 액션 표시
-document.addEventListener('mouseover', e => {
-  const card = e.target.closest('.vault-card');
-  if (card) card.querySelector('.vault-card-actions')?.style.setProperty('opacity','1');
-});
-document.addEventListener('mouseout', e => {
-  const card = e.target.closest('.vault-card');
-  if (card && !card.contains(e.relatedTarget)) {
-    card.querySelector('.vault-card-actions')?.style.setProperty('opacity','0');
-  }
-});
-
-// 전체 태그 목록
-function renderAllTags() {
-  const allTags = [...new Set(allVaults.flatMap(v => v.v_tags || []))].slice(0, 20);
-  const el = document.getElementById('all-tags-list');
-  if (allTags.length === 0) {
-    el.innerHTML = '<span style="font-size:0.75rem;color:var(--tx-4)">태그 없음</span>';
-    return;
-  }
-  el.innerHTML = allTags.map(t =>
-    `<span class="tag" style="cursor:pointer" onclick="searchByTag('${SION.util.esc(t)}')">${SION.util.esc(t)}</span>`
+function renderSidebar(){
+  // 카테고리 집계
+  const cats = {};
+  V.all.forEach(r=>{ const c=r.category||'미분류'; cats[c]=(cats[c]||0)+1; });
+  const catRows = document.getElementById('cat-rows');
+  document.getElementById('cn-all').textContent = V.all.length;
+  const extra = Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,n])=>
+    `<div class="cat-row ${V.fCat===c?'active':''}" data-cat="${SION.util.esc(c)}">${SION.util.esc(c)}<span class="cat-n">${n}</span></div>`
   ).join('');
-}
-
-function searchByTag(tag) {
-  document.getElementById('vault-search').value = tag;
-  searchQ = tag;
-  renderVaults();
-}
-
-// ── 상세 모달 ─────────────────────────────────
-function openDetail(id) {
-  const v = allVaults.find(v => String(v.id) === String(id));
-  if (!v) return;
-  detailItem = v;
-  const cat = getCatInfo(v.v_category);
-
-  document.getElementById('det-cat-label').textContent = `${cat.vc_icon} ${v.v_category || '기타'}`;
-  document.getElementById('det-title').textContent = v.v_title;
-  document.getElementById('det-content').textContent = v.v_content || '내용 없음';
-  document.getElementById('det-content-wrap').style.display = v.v_content ? '' : 'none';
-
-  const urlWrap = document.getElementById('det-url-wrap');
-  if (v.v_url) {
-    urlWrap.style.display = '';
-    document.getElementById('det-url').href = v.v_url;
-    document.getElementById('det-url-text').textContent = v.v_url;
-  } else {
-    urlWrap.style.display = 'none';
-  }
-
-  const tagsEl = document.getElementById('det-tags');
-  const tagsWrap = document.getElementById('det-tags-wrap');
-  if (v.v_tags?.length) {
-    tagsWrap.style.display = '';
-    tagsEl.innerHTML = v.v_tags.map(t => `<span class="tag">${SION.util.esc(t)}</span>`).join('');
-  } else {
-    tagsWrap.style.display = 'none';
-  }
-
-  document.getElementById('det-meta').textContent =
-    `생성: ${SION.date.fmtDate(v.created_at)} · 수정: ${SION.date.fmtDate(v.updated_at)}${v.v_is_pinned ? ' · 📌 고정됨' : ''}`;
-
-  document.getElementById('det-pin').textContent = v.v_is_pinned ? '📌 고정 해제' : '📌 고정';
-
-  SION.ui.openModal('modal-detail');
-}
-
-document.getElementById('det-pin').addEventListener('click', async () => {
-  if (!detailItem) return;
-  await togglePin(detailItem.id);
-  SION.ui.closeModal('modal-detail');
-});
-document.getElementById('det-edit').addEventListener('click', () => {
-  if (!detailItem) return;
-  SION.ui.closeModal('modal-detail');
-  openEditVault(detailItem.id);
-});
-document.getElementById('det-delete').addEventListener('click', () => {
-  if (!detailItem) return;
-  SION.ui.closeModal('modal-detail');
-  deleteVault(detailItem.id);
-});
-
-// ── CRUD ─────────────────────────────────────
-async function togglePin(id) {
-  const v = allVaults.find(v => String(v.id) === String(id));
-  if (!v) return;
-  try {
-    await SION.db.update('vault', `id=eq.${id}`, { v_is_pinned: !v.v_is_pinned });
-    v.v_is_pinned = !v.v_is_pinned;
-    SION.ui.toast(v.v_is_pinned ? '고정됨' : '고정 해제됨', 'success');
-    renderVaults();
-  } catch(e) { SION.ui.toast('오류: ' + e.message, 'error'); }
-}
-
-async function deleteVault(id) {
-  if (!confirm('이 자료를 삭제하시겠습니까?')) return;
-  try {
-    await SION.db.remove('vault', `id=eq.${id}`);
-    allVaults = allVaults.filter(v => String(v.id) !== String(id));
-    SION.ui.toast('삭제됨', 'success');
-    renderVaults();
-    renderCategorySidebar();
-    renderAllTags();
-  } catch(e) { SION.ui.toast('삭제 실패: ' + e.message, 'error'); }
-}
-
-// ── 폼 ───────────────────────────────────────
-function openAddVault() {
-  document.getElementById('vf-id').value      = '';
-  document.getElementById('vf-title').value   = '';
-  document.getElementById('vf-content').value = '';
-  document.getElementById('vf-url').value     = '';
-  if (filterCat) document.getElementById('vf-category').value = filterCat;
-  vfTags   = [];
-  vfPinned = false;
-  renderVfTags();
-  updateVfPinUI();
-  document.getElementById('vault-modal-title').textContent = '자료 추가';
-  SION.ui.openModal('modal-vault');
-  setTimeout(() => document.getElementById('vf-title').focus(), 100);
-}
-
-function openEditVault(id) {
-  const v = allVaults.find(v => String(v.id) === String(id));
-  if (!v) return;
-  document.getElementById('vf-id').value      = v.id;
-  document.getElementById('vf-title').value   = v.v_title || '';
-  document.getElementById('vf-content').value = v.v_content || '';
-  document.getElementById('vf-url').value     = v.v_url || '';
-  document.getElementById('vf-category').value= v.v_category || '';
-  vfTags   = Array.isArray(v.v_tags) ? [...v.v_tags] : [];
-  vfPinned = v.v_is_pinned || false;
-  renderVfTags();
-  updateVfPinUI();
-  document.getElementById('vault-modal-title').textContent = '자료 수정';
-  SION.ui.openModal('modal-vault');
-}
-
-function renderVfTags() {
-  document.getElementById('vf-tags').innerHTML = vfTags.map((t, i) => `
-    <span class="tag">${SION.util.esc(t)}<span class="tag-remove" data-i="${i}">✕</span></span>
-  `).join('');
-  document.querySelectorAll('#vf-tags .tag-remove').forEach(btn => {
-    btn.addEventListener('click', () => {
-      vfTags.splice(Number(btn.dataset.i), 1);
-      renderVfTags();
-    });
+  catRows.innerHTML = `<div class="cat-row ${V.fCat===''?'active':''}" data-cat="">📋 전체<span class="cat-n" id="cn-all">${V.all.length}</span></div>${extra}`;
+  catRows.querySelectorAll('[data-cat]').forEach(row=>{
+    row.addEventListener('click',()=>{ V.fCat = row.dataset.cat; render(); });
   });
-}
 
-function updateVfPinUI() {
-  const check = document.getElementById('vf-pin-check');
-  const svg   = document.getElementById('vf-pin-svg');
-  check.classList.toggle('checked', vfPinned);
-  svg.style.display = vfPinned ? '' : 'none';
-}
-
-document.getElementById('vf-pin-check').addEventListener('click', () => {
-  vfPinned = !vfPinned;
-  updateVfPinUI();
-});
-
-document.getElementById('vf-tag-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ',') {
-    e.preventDefault();
-    const v = e.target.value.trim().replace(/,$/,'');
-    if (v && !vfTags.includes(v)) { vfTags.push(v); renderVfTags(); }
-    e.target.value = '';
+  // 태그 클라우드
+  const tagSet = {};
+  V.all.forEach(r=> (r.tags||[]).forEach(t=> tagSet[t]=(tagSet[t]||0)+1));
+  const tc = document.getElementById('tag-cloud');
+  const tags = Object.keys(tagSet);
+  if (!tags.length){ tc.innerHTML = `<div style="font-size:.74rem;color:var(--tx-4)">태그 없음</div>`; }
+  else {
+    tc.innerHTML = tags.slice(0,20).map(t=>
+      `<span class="tcloud-tag ${V.fTag===t?'active':''}" data-tag="${SION.util.esc(t)}">${SION.util.esc(t)}</span>`
+    ).join('');
+    tc.querySelectorAll('[data-tag]').forEach(el=>{
+      el.addEventListener('click',()=>{ V.fTag = (V.fTag===el.dataset.tag) ? '' : el.dataset.tag; render(); });
+    });
   }
-});
 
-document.getElementById('vf-save').addEventListener('click', async () => {
-  const title = document.getElementById('vf-title').value.trim();
-  if (!title) { SION.ui.toast('제목을 입력하세요', 'error'); return; }
+  const pinBtn = document.getElementById('pin-filter');
+  pinBtn.classList.toggle('active', V.fPin);
+}
 
-  const id   = document.getElementById('vf-id').value;
+async function togglePin(id){
+  const item = V.all.find(r=>String(r.id)===String(id));
+  if (!item) return;
+  try{
+    await SION.db.update('vault_items',`id=eq.${id}`,{is_pinned:!item.is_pinned});
+    item.is_pinned = !item.is_pinned;
+    SION.ui.toast(item.is_pinned?'고정됨':'고정 해제됨','success');
+    render();
+  }catch(e){ SION.ui.toast('오류','error'); }
+}
+
+async function del(id){
+  if (!confirm('삭제하시겠습니까?')) return;
+  try{
+    await SION.db.remove('vault_items',`id=eq.${id}`);
+    V.all = V.all.filter(r=>String(r.id)!==String(id));
+    SION.ui.toast('삭제됨','success');
+    SION.ui.closeModal('modal-vault');
+    render();
+  }catch(e){ SION.ui.toast('삭제 실패','error'); }
+}
+
+function renderFTags(){
+  document.getElementById('form-tags').innerHTML = V.fTags.map((t,i)=>
+    `<span class="tag">${SION.util.esc(t)}<span class="tag-remove" data-i="${i}">✕</span></span>`).join('');
+  document.querySelectorAll('#form-tags .tag-remove').forEach(b=>
+    b.addEventListener('click',()=>{ V.fTags.splice(Number(b.dataset.i),1); renderFTags(); }));
+}
+
+function setPinBox(v){
+  V.formPinned = v;
+  document.getElementById('form-pin-box').classList.toggle('checked', v);
+}
+
+function openAdd(){
+  V.fTags = [];
+  ['form-id','form-title','form-cat','form-content'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('form-del').style.display='none';
+  renderFTags(); setPinBox(false);
+  document.getElementById('modal-title').textContent='자료 추가';
+  SION.ui.openModal('modal-vault');
+  setTimeout(()=>document.getElementById('form-title').focus(),80);
+}
+
+function openEdit(id){
+  const item = V.all.find(r=>String(r.id)===String(id));
+  if (!item) return;
+  V.fTags = Array.isArray(item.tags) ? [...item.tags] : [];
+  document.getElementById('form-id').value = item.id;
+  document.getElementById('form-title').value = item.title||'';
+  document.getElementById('form-cat').value = item.category||'';
+  document.getElementById('form-content').value = item.content||'';
+  document.getElementById('form-del').style.display=''; document.getElementById('form-del').dataset.id=id;
+  renderFTags(); setPinBox(!!item.is_pinned);
+  document.getElementById('modal-title').textContent='자료 수정';
+  SION.ui.openModal('modal-vault');
+}
+
+async function saveModal(){
+  const title = document.getElementById('form-title').value.trim();
+  const content = document.getElementById('form-content').value.trim();
+  if (!title){ SION.ui.toast('제목을 입력하세요','error'); return; }
+  if (!content){ SION.ui.toast('내용을 입력하세요','error'); return; }
+  const id = document.getElementById('form-id').value;
   const body = {
-    v_title:      title,
-    v_category:   document.getElementById('vf-category').value || '기타',
-    v_content:    document.getElementById('vf-content').value.trim() || null,
-    v_url:        document.getElementById('vf-url').value.trim() || null,
-    v_tags:       vfTags.length > 0 ? vfTags : null,
-    v_is_pinned:  vfPinned,
+    title, content,
+    category: document.getElementById('form-cat').value.trim() || null,
+    tags: V.fTags.length ? V.fTags : null,
+    is_pinned: V.formPinned,
   };
-
-  const saveBtn = document.getElementById('vf-save');
-  saveBtn.disabled = true;
-  saveBtn.innerHTML = SION.ui.spinner(14) + ' 저장중';
-
-  try {
-    if (id) {
-      const res = await SION.db.update('vault', `id=eq.${id}`, body);
-      const updated = Array.isArray(res) ? res[0] : res;
-      const idx = allVaults.findIndex(v => String(v.id) === String(id));
-      if (idx !== -1 && updated) allVaults[idx] = { ...allVaults[idx], ...updated };
-      SION.ui.toast('수정됨', 'success');
+  const btn = document.getElementById('form-save'); btn.disabled=true; btn.innerHTML=SION.ui.spinner(14)+' 저장중';
+  try{
+    if (id){
+      const res = await SION.db.update('vault_items',`id=eq.${id}`,body);
+      const upd = Array.isArray(res)?res[0]:res;
+      const i = V.all.findIndex(r=>String(r.id)===String(id));
+      if (i!==-1 && upd) V.all[i] = {...V.all[i], ...upd};
+      SION.ui.toast('수정됨','success');
     } else {
-      const res = await SION.db.insert('vault', body);
-      const inserted = Array.isArray(res) ? res[0] : res;
-      if (inserted) allVaults.unshift(inserted);
-      SION.ui.toast('추가됨', 'success');
+      const res = await SION.db.insert('vault_items', body);
+      const item = Array.isArray(res)?res[0]:res;
+      if (item) V.all.unshift(item);
+      SION.ui.toast('추가됨','success');
     }
     SION.ui.closeModal('modal-vault');
-    renderVaults();
-    renderCategorySidebar();
-    renderAllTags();
-  } catch(e) {
-    SION.ui.toast('저장 실패: ' + e.message, 'error');
-  } finally {
-    saveBtn.disabled = false;
-    saveBtn.textContent = '저장';
-  }
-});
-
-// ── 카테고리 관리 ─────────────────────────────
-function renderCatEditList() {
-  const el = document.getElementById('cat-edit-list');
-  const editable = categories.filter(c => c.vc_name !== '전체');
-  el.innerHTML = editable.map(c => `
-    <div class="cat-edit-item">
-      <span style="font-size:1rem">${c.vc_icon}</span>
-      <span class="cat-dot" style="background:${c.vc_color}"></span>
-      <span style="flex:1;font-size:0.85rem;color:var(--tx-1)">${SION.util.esc(c.vc_name)}</span>
-      <button class="btn btn-danger btn-sm del-cat-btn" data-id="${c.id}" data-name="${SION.util.esc(c.vc_name)}">삭제</button>
-    </div>
-  `).join('');
-  el.querySelectorAll('.del-cat-btn').forEach(btn => {
-    btn.addEventListener('click', () => deleteCat(btn.dataset.id, btn.dataset.name));
-  });
+    render();
+  }catch(e){ SION.ui.toast('저장 실패: '+e.message,'error'); }
+  finally{ btn.disabled=false; btn.textContent='저장'; }
 }
 
-async function deleteCat(id, name) {
-  if (!confirm(`'${name}' 카테고리를 삭제하시겠습니까?\n이 카테고리의 자료는 '기타'로 변경됩니다.`)) return;
-  try {
-    await SION.db.update('vault', `v_category=eq.${encodeURIComponent(name)}`, { v_category: '기타' });
-    await SION.db.remove('vault_category', `id=eq.${id}`);
-    SION.ui.toast('삭제됨', 'success');
-    await loadCategories();
-    renderCatEditList();
-    renderVaults();
-  } catch(e) { SION.ui.toast('삭제 실패: ' + e.message, 'error'); }
-}
-
-document.getElementById('btn-add-cat-modal').addEventListener('click', async () => {
-  const name  = document.getElementById('new-cat-name').value.trim();
-  const color = document.getElementById('new-cat-color').value;
-  const icon  = document.getElementById('new-cat-icon').value.trim() || '📁';
-  if (!name) { SION.ui.toast('카테고리명을 입력하세요', 'error'); return; }
-  try {
-    await SION.db.insert('vault_category', { vc_name: name, vc_color: color, vc_icon: icon, vc_order: categories.length });
-    SION.ui.toast(`'${name}' 카테고리 추가됨`, 'success');
-    document.getElementById('new-cat-name').value  = '';
-    document.getElementById('new-cat-icon').value  = '';
-    await loadCategories();
-    renderCatEditList();
-  } catch(e) { SION.ui.toast('추가 실패: ' + e.message, 'error'); }
-});
-
-// ── 컨트롤 초기화 ─────────────────────────────
-function initControls() {
-  document.getElementById('btn-add-vault').addEventListener('click', openAddVault);
-  document.getElementById('btn-add-cat-side').addEventListener('click', () => {
-    renderCatEditList();
-    SION.ui.openModal('modal-cat');
+function initControls(){
+  document.getElementById('v-search').addEventListener('input',
+    SION.util.debounce(e=>{ V.fQ = e.target.value.trim(); render(); },250));
+  document.getElementById('v-sort').addEventListener('change', e=>{ V.sort = e.target.value; render(); });
+  document.querySelectorAll('.vt-btn').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.vt-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active'); V.view = b.dataset.vt; render();
+  }));
+  document.getElementById('pin-filter').addEventListener('click', function(){
+    V.fPin = !V.fPin; render();
   });
-  document.getElementById('btn-manage-cat').addEventListener('click', () => {
-    renderCatEditList();
-    SION.ui.openModal('modal-cat');
+  document.getElementById('btn-add-top').addEventListener('click', openAdd);
+  document.getElementById('fab-add').addEventListener('click', openAdd);
+  document.getElementById('form-pin-wrap').addEventListener('click', ()=> setPinBox(!V.formPinned));
+  document.getElementById('form-tag-input').addEventListener('keydown', e=>{
+    if (e.key==='Enter' || e.key===','){
+      e.preventDefault();
+      const v = e.target.value.trim().replace(/,$/,'');
+      if (v && !V.fTags.includes(v)){ V.fTags.push(v); renderFTags(); }
+      e.target.value='';
+    }
   });
-
-  // 검색
-  document.getElementById('vault-search').addEventListener('input',
-    SION.util.debounce(e => { searchQ = e.target.value.trim(); renderVaults(); }, 250)
-  );
-
-  // 정렬
-  document.getElementById('sort-btn').addEventListener('click', e => {
-    e.stopPropagation();
-    document.getElementById('sort-menu').classList.toggle('open');
-  });
-  document.querySelectorAll('[data-sort]').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      sortOrder = btn.dataset.sort;
-      document.getElementById('sort-label').textContent = btn.textContent;
-      document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('sort-menu').classList.remove('open');
-      allVaults = await SION.db.select('vault', `order=${sortOrder}&limit=200`);
-      renderVaults();
-    });
-  });
-
-  // 보기 전환
-  document.getElementById('view-btn').addEventListener('click', e => {
-    e.stopPropagation();
-    document.getElementById('view-menu-v').classList.toggle('open');
-  });
-  document.querySelectorAll('[data-vview]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      vaultView = btn.dataset.vview;
-      document.getElementById('view-btn').childNodes[2].textContent = btn.textContent;
-      document.querySelectorAll('[data-vview]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('view-menu-v').classList.remove('open');
-      renderVaults();
-    });
+  document.getElementById('form-save').addEventListener('click', saveModal);
+  document.getElementById('form-del').addEventListener('click', ()=>{
+    const id = document.getElementById('form-del').dataset.id; if (id) del(id);
   });
 }
 </script>
