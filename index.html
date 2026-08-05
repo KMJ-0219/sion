@@ -73,7 +73,10 @@
 .conv-item:hover{background:var(--bg-overlay)}
 .conv-item.active{background:var(--ac-dim)}
 .conv-title{font-size:.76rem;font-weight:500;color:var(--tx-1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:2px}
-.conv-meta{font-size:.6rem;color:var(--tx-3);font-family:var(--font-mono)}
+.conv-meta{font-size:.6rem;color:var(--tx-3);font-family:var(--font-mono);display:flex;align-items:center;justify-content:space-between}
+.conv-del-btn{background:none;border:none;color:var(--tx-4);cursor:pointer;font-size:.65rem;opacity:0;transition:opacity .12s;padding:0 2px}
+.conv-item:hover .conv-del-btn{opacity:1}
+.conv-del-btn:hover{color:var(--red)}
 .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:9px}
 .ms-card{padding:9px 10px;background:var(--bg-float);border-radius:8px;border:1px solid var(--line-mid);cursor:pointer;transition:border-color .12s}
 .ms-card:hover{border-color:var(--line-hi)}
@@ -247,6 +250,15 @@
         <div class="checkbox" id="set-voice-box"></div>
         <span style="font-size:.82rem;color:var(--tx-2)">모든 응답을 음성으로도 자동으로 들려주기</span>
       </div>
+      <div class="form-group">
+        <label class="input-label">SION이 기억하고 있는 것들</label>
+        <div id="mem-list" style="display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto"></div>
+        <div style="display:flex;gap:6px;margin-top:6px">
+          <input class="input" type="text" id="mem-add-input" placeholder="직접 기억시킬 내용 입력..." style="flex:1"/>
+          <button class="btn btn-ghost btn-sm" id="mem-add-btn">추가</button>
+        </div>
+        <div style="font-size:.68rem;color:var(--tx-4);margin-top:4px">대화를 나누면 SION이 기억할 만한 내용을 스스로 뽑아서 여기 쌓아요. 최근 50개까지만 유지돼요.</div>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="SION.ui.closeModal('modal-settings')">취소</button>
@@ -274,6 +286,7 @@ let convId = null;
 let todayData = [];
 let thinking = false;
 let aiSettings = { system_prompt:'', voice_enabled:false };
+let memories = [];
 let audioStore = {};
 let audioCounter = 0;
 
@@ -365,6 +378,8 @@ function sysprompt() {
   const n = new Date();
   const dt = `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${DAYS[n.getDay()]}요일 ${PAD(n.getHours())}:${PAD(n.getMinutes())}`;
   const sched = JSON.stringify(todayData.map(d=>({이름:d.title,시간:d.due_at?.slice(0,16),카테고리:d.category,완료:d.is_done})));
+  const memLines = memories.length ? memories.map(m=>`- ${m.content}`).join('\n') : '';
+  const memBlock = memLines ? `\n\n[사용자에 대해 기억하고 있는 것들 — 자연스럽게 참고만 하고 티내며 나열하지 말 것]\n${memLines}` : '';
   const custom = aiSettings.system_prompt ? `\n\n[사용자 지정 지침 — 반드시 우선 반영]\n${aiSettings.system_prompt}` : '';
   return `당신은 SION이라는 사용자 전용 개인 AI 비서입니다. 현재 시각: ${dt}.
 
@@ -382,7 +397,7 @@ function sysprompt() {
 - 함수 호출 후에는 결과를 바탕으로 짧고 자연스러운 한국어로 요약하세요. 목록은 마크다운으로 정리하세요.
 - 함수 호출이 필요 없는 일반 대화는 자연스러운 한국어 마크다운으로 답하세요.
 
-오늘 일정: ${sched}${custom}`;
+오늘 일정: ${sched}${memBlock}${custom}`;
 }
 
 async function callOpenAI(conversation, useTools) {
@@ -673,6 +688,7 @@ async function persistSettings() {
 function openSettings() {
   document.getElementById('set-prompt').value = aiSettings.system_prompt || '';
   setVoiceBox(aiSettings.voice_enabled);
+  renderMemList();
   SION.ui.openModal('modal-settings');
 }
 function setVoiceBox(v) {
@@ -687,6 +703,76 @@ async function saveSettingsFromModal() {
   updateVoiceBtnUI();
   SION.ui.closeModal('modal-settings');
   SION.ui.toast('설정이 저장됐어요','success');
+}
+
+// ── 장기 기억 (memories) ───────────────────────
+// 대화가 끝날 때(새 대화 시작 / 다른 대화로 전환) 그 대화에서
+// 계속 기억해두면 좋을 사실만 AI가 스스로 뽑아 memories 테이블에 저장.
+// 매 메시지마다 하지 않고 "대화 종료 시점"에만 해서 API 호출을 아낌.
+const MAX_MEMORIES = 50;
+
+async function loadMemories() {
+  try { memories = await SION.db.select('memories', 'order=created_at.desc&limit=50'); }
+  catch(e) { memories = []; }
+}
+
+async function pruneMemories() {
+  try {
+    const rows = await SION.db.select('memories', `order=created_at.desc&offset=${MAX_MEMORIES}&select=id`);
+    for (const r of rows) await SION.db.remove('memories', `id=eq.${r.id}`);
+  } catch(e) {}
+}
+
+async function extractMemories(compactMsgs) {
+  if (!compactMsgs || compactMsgs.length < 2) return; // 너무 짧은 대화는 스킵
+  try {
+    const transcript = compactMsgs.map(m=>`${m.role==='user'?'사용자':'SION'}: ${m.content}`).join('\n').slice(0,4000);
+    const extractPrompt = `아래는 사용자와 SION이 나눈 대화입니다.
+앞으로도 계속 참고하면 좋을 사용자에 대한 안정적인 사실/선호/맥락(취향, 목표, 습관, 신상 정보 등)이 있으면 짧은 문장으로 최대 5개까지 뽑아주세요.
+날씨, 일시적 감정처럼 오늘만 유효한 정보는 제외하고, 새로울 게 없으면 빈 배열만 반환하세요.
+반드시 JSON 배열만 출력하고 다른 텍스트는 절대 포함하지 마세요. 예: ["사용자는 고등학생이고 기계공학에 관심이 많다"]
+
+대화:
+${transcript}`;
+
+    const r = await fetch(EDGE_FN_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, messages: [{ role:'user', content: extractPrompt }], temperature: 0.2 })
+    });
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok || d.error) return;
+    const raw = d.choices?.[0]?.message?.content || '[]';
+    let facts = [];
+    try { facts = JSON.parse(raw.match(/\[[\s\S]*\]/)?.[0] || '[]'); } catch(e) { return; }
+    if (!Array.isArray(facts) || !facts.length) return;
+
+    // 기존 기억과 겹치는 건 최대한 걸러냄 (단순 부분일치 검사)
+    const existingLower = memories.map(m=>m.content.toLowerCase());
+    const newOnes = facts.filter(f => typeof f==='string' && f.trim() && !existingLower.some(e=>e.includes(f.trim().toLowerCase().slice(0,10))));
+
+    for (const content of newOnes.slice(0,5)) {
+      await SION.db.insert('memories', { content: content.trim() });
+    }
+    if (newOnes.length) { await loadMemories(); await pruneMemories(); }
+  } catch(e) { /* 기억 추출 실패가 채팅을 막으면 안 되므로 조용히 무시 */ }
+}
+
+function renderMemList() {
+  const el = document.getElementById('mem-list');
+  if (!memories.length) { el.innerHTML = `<div style="font-size:.74rem;color:var(--tx-4)">아직 기억하고 있는 게 없어요. 대화를 나누면 자동으로 쌓여요.</div>`; return; }
+  el.innerHTML = memories.map(m=>`
+    <div style="display:flex;align-items:center;gap:6px;padding:5px 7px;background:var(--bg-float);border:1px solid var(--line-mid);border-radius:6px;font-size:.76rem;color:var(--tx-2)">
+      <span style="flex:1">${SION.util.esc(m.content)}</span>
+      <button class="mem-del-btn" data-id="${m.id}" style="background:none;border:none;color:var(--tx-4);cursor:pointer;font-size:.7rem">✕</button>
+    </div>`).join('');
+  el.querySelectorAll('.mem-del-btn').forEach(b=>b.addEventListener('click', async ()=>{
+    try {
+      await SION.db.remove('memories', `id=eq.${b.dataset.id}`);
+      memories = memories.filter(m=>String(m.id)!==b.dataset.id);
+      renderMemList();
+    } catch(e) { SION.ui.toast('삭제 실패','error'); }
+  }));
 }
 
 // ── 최근 대화 (저장공간 절약: 최근 20개만 유지) ──
@@ -727,14 +813,17 @@ async function loadConvs() {
       const tl = `${PAD(d.getMonth()+1)}/${PAD(d.getDate())} ${PAD(d.getHours())}:${PAD(d.getMinutes())}`;
       return `<div class="conv-item ${c.id===convId?'active':''}" data-id="${c.id}">
         <div class="conv-title">${SION.util.esc(c.title||'대화')}</div>
-        <div class="conv-meta">${tl}</div>
+        <div class="conv-meta"><span>${tl}</span><button class="conv-del-btn" data-id="${c.id}" title="삭제">✕</button></div>
       </div>`;
     }).join('');
     el.querySelectorAll('.conv-item').forEach(item=>{
-      item.addEventListener('click', ()=>{
+      item.addEventListener('click', e=>{
+        if (e.target.closest('.conv-del-btn')) return;
         const id = item.dataset.id;
         const row = rows.find(r=>String(r.id)===id);
-        if (!row) return;
+        if (!row || id === convId) return;
+        // 지금 보고 있던 대화(다른 대화)를 떠나는 시점에 기억 추출
+        if (msgs.length) extractMemories(compactMsgsForSave());
         convId = id;
         msgs = (row.messages||[]).map(m=>({ role:m.role, content:m.content }));
         const chatEl = document.getElementById('chat-msgs');
@@ -743,6 +832,35 @@ async function loadConvs() {
         document.querySelectorAll('.conv-item').forEach(c=>c.classList.toggle('active', c.dataset.id===id));
       });
     });
+    el.querySelectorAll('.conv-del-btn').forEach(b=>{
+      b.addEventListener('click', async e=>{
+        e.stopPropagation();
+        try {
+          await SION.db.remove('conversations', `id=eq.${b.dataset.id}`);
+          if (b.dataset.id === convId) { convId = null; }
+          loadConvs();
+        } catch(e2) { SION.ui.toast('삭제 실패','error'); }
+      });
+    });
+  } catch(e) {}
+}
+
+// ── 최근 대화 자동 이어가기 ────────────────────
+// 페이지를 새로고침/재접속해도 얼마 전까지 하던 대화를 이어갈 수 있도록
+// 가장 최근 대화가 일정 시간 이내(기본 6시간)면 자동으로 불러옴.
+const RESUME_WINDOW_MS = 6 * 60 * 60 * 1000;
+async function autoResumeRecent() {
+  try {
+    const rows = await SION.db.select('conversations', 'order=updated_at.desc&limit=1');
+    if (!rows.length) return;
+    const row = rows[0];
+    const ageMs = Date.now() - new Date(row.updated_at).getTime();
+    if (ageMs > RESUME_WINDOW_MS) return;
+    convId = row.id;
+    msgs = (row.messages||[]).map(m=>({ role:m.role, content:m.content }));
+    const chatEl = document.getElementById('chat-msgs');
+    chatEl.innerHTML = '';
+    msgs.forEach(m=> addMsg(m.role, m.role==='user' ? m.content : { text:m.content, actions:[] }, '—'));
   } catch(e) {}
 }
 
@@ -815,7 +933,24 @@ document.getElementById('btn-voice-toggle').addEventListener('click', async ()=>
 document.getElementById('btn-settings').addEventListener('click', openSettings);
 document.getElementById('set-voice-wrap').addEventListener('click', ()=> setVoiceBox(document.getElementById('set-voice-box').dataset.on !== '1'));
 document.getElementById('btn-settings-save').addEventListener('click', saveSettingsFromModal);
+document.getElementById('mem-add-btn').addEventListener('click', async ()=>{
+  const input = document.getElementById('mem-add-input');
+  const v = input.value.trim();
+  if (!v) return;
+  try {
+    const res = await SION.db.insert('memories', { content: v });
+    const item = Array.isArray(res)?res[0]:res;
+    if (item) memories.unshift(item);
+    input.value = '';
+    renderMemList();
+    pruneMemories();
+  } catch(e) { SION.ui.toast('추가 실패','error'); }
+});
+document.getElementById('mem-add-input').addEventListener('keydown', e=>{
+  if (e.key==='Enter') document.getElementById('mem-add-btn').click();
+});
 document.getElementById('btn-new-chat').addEventListener('click',()=>{
+  if (msgs.length) extractMemories(compactMsgsForSave());
   msgs=[]; convId=null;
   const el=document.getElementById('chat-msgs');
   el.innerHTML=`<div class="chat-empty" id="chat-empty">
@@ -835,9 +970,11 @@ document.getElementById('btn-new-chat').addEventListener('click',()=>{
 
 (async()=>{
   await loadSettings();
+  await loadMemories();
   await loadToday();
   renderMiniSched();
   await loadStats();
+  await autoResumeRecent();
   await loadConvs();
 })();
 </script>
