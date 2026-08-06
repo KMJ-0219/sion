@@ -165,6 +165,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             </button>
             <span class="model-badge">GPT-4o mini</span>
+            <span class="model-badge" id="token-badge" title="이번 세션 누적 토큰 사용량">0 tok</span>
           </div>
         </div>
 
@@ -182,6 +183,9 @@
           </div>
         </div>
 
+        <div id="regen-row" style="display:none;padding:0 12px 6px;text-align:center">
+          <button class="btn btn-ghost btn-sm" id="btn-regenerate">🔄 다시 생성</button>
+        </div>
         <div class="chat-in-wrap">
           <div class="chat-in-row">
             <button class="mic-btn" id="mic-btn" title="음성으로 말하기">
@@ -289,6 +293,18 @@ let aiSettings = { system_prompt:'', voice_enabled:false };
 let memories = [];
 let audioStore = {};
 let audioCounter = 0;
+let sessionTokenTotal = 0;
+
+function formatTokens(n) {
+  if (!n) return '0';
+  if (n >= 1000) return (n/1000).toFixed(1)+'k';
+  return String(n);
+}
+function addSessionTokens(n) {
+  sessionTokenTotal += n || 0;
+  const el = document.getElementById('token-badge');
+  if (el) el.textContent = formatTokens(sessionTokenTotal) + ' tok';
+}
 
 const now = new Date();
 document.getElementById('topbar-date').textContent =
@@ -371,6 +387,18 @@ const TOOLS = [
         required: ['query']
       }
     }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'recall_memory',
+      description: '기본으로 제공된 최근 기억 목록에 없는, 더 예전의 기억 중 특정 키워드와 관련된 게 있는지 찾아본다. 사용자가 예전에 말했던 특정 내용을 물어볼 때 사용.',
+      parameters: {
+        type: 'object',
+        properties: { query: { type: 'string', description: '찾고 싶은 키워드' } },
+        required: ['query']
+      }
+    }
   }
 ];
 
@@ -378,8 +406,11 @@ function sysprompt() {
   const n = new Date();
   const dt = `${n.getFullYear()}년 ${n.getMonth()+1}월 ${n.getDate()}일 ${DAYS[n.getDay()]}요일 ${PAD(n.getHours())}:${PAD(n.getMinutes())}`;
   const sched = JSON.stringify(todayData.map(d=>({이름:d.title,시간:d.due_at?.slice(0,16),카테고리:d.category,완료:d.is_done})));
-  const memLines = memories.length ? memories.map(m=>`- ${m.content}`).join('\n') : '';
-  const memBlock = memLines ? `\n\n[사용자에 대해 기억하고 있는 것들 — 자연스럽게 참고만 하고 티내며 나열하지 말 것]\n${memLines}` : '';
+  // 토큰 절약: 저장된 기억 전부가 아니라 최근 것 일부만 기본으로 주입하고,
+  // 그 밖의 예전 기억이 필요하면 recall_memory 툴로 모델이 직접 찾아보게 함
+  const memShown = memories.slice(0, MEMORY_CONTEXT_LIMIT);
+  const memLines = memShown.length ? memShown.map(m=>`- ${m.content}`).join('\n') : '';
+  const memBlock = memLines ? `\n\n[사용자에 대해 기억하고 있는 것들 중 최근 것 — 자연스럽게 참고만 하고 티내며 나열하지 말 것. 여기 없는 예전 기억이 필요하면 recall_memory로 찾아볼 것]\n${memLines}` : '';
   const custom = aiSettings.system_prompt ? `\n\n[사용자 지정 지침 — 반드시 우선 반영]\n${aiSettings.system_prompt}` : '';
   return `당신은 SION이라는 사용자 전용 개인 AI 비서입니다. 현재 시각: ${dt}.
 
@@ -388,23 +419,39 @@ function sysprompt() {
 할 수 있는 일:
 - 일정 등록/조회/완료 처리 (add_schedule, list_schedules, complete_schedule)
 - 자료보관함에 정보 저장 및 검색 (add_vault, search_vault)
+- 예전 기억 검색 (recall_memory)
 - 그 외 일반적인 대화, 지식 질문, 조언
 
 규칙:
 - 한 메시지에 여러 요청이 섞여 있으면 필요한 함수를 각각 병렬로 호출하세요.
 - 날짜/시간이 불명확하면 오늘/내일 기준으로 자연스럽게 추론하세요.
-- 일정/자료를 모르면 추측하지 말고 list_schedules, search_vault로 실제 확인 후 답하세요.
+- 확실하지 않은 건 추측하지 말고 적절한 함수(list_schedules, search_vault, recall_memory)로 실제 확인 후 답하세요.
 - 함수 호출 후에는 결과를 바탕으로 짧고 자연스러운 한국어로 요약하세요. 목록은 마크다운으로 정리하세요.
+- 답변은 꼭 필요한 만큼만 간결하게 하고, 불필요하게 길게 늘어놓지 마세요.
 - 함수 호출이 필요 없는 일반 대화는 자연스러운 한국어 마크다운으로 답하세요.
 
 오늘 일정: ${sched}${memBlock}${custom}`;
 }
 
+// 토큰 절약: 매 요청마다 전체 대화를 다 보내지 않고 최근 MAX_TURNS 턴만 잘라서 전송.
+// (화면/DB에 남는 msgs 전체는 그대로 유지되고, API로 나가는 부분만 축소됨)
+const MAX_TURNS = 8;
+const MEMORY_CONTEXT_LIMIT = 10;
+
+function contextForAPI(full) {
+  const userIdxs = [];
+  full.forEach((m,i)=>{ if (m.role==='user') userIdxs.push(i); });
+  if (userIdxs.length <= MAX_TURNS) return full;
+  const cutFrom = userIdxs[userIdxs.length - MAX_TURNS];
+  return full.slice(cutFrom);
+}
+
 async function callOpenAI(conversation, useTools) {
   const body = {
     model: MODEL,
-    messages: [{ role:'system', content: sysprompt() }, ...conversation],
+    messages: [{ role:'system', content: sysprompt() }, ...contextForAPI(conversation)],
     temperature: 0.7,
+    max_tokens: 700,
   };
   if (useTools) {
     body.tools = TOOLS;
@@ -418,7 +465,7 @@ async function callOpenAI(conversation, useTools) {
   });
   const d = await r.json().catch(()=>({}));
   if (!r.ok || d.error) throw new Error(d.error?.message || `API 오류 ${r.status}`);
-  return d.choices[0].message;
+  return { message: d.choices[0].message, usage: d.usage || null };
 }
 
 // ── 액션 실행 ────────────────────────────────
@@ -483,6 +530,14 @@ async function execSearchVault(a) {
     const rows = await SION.db.select('vault_items', `or=(title.ilike.*${q}*,content.ilike.*${q}*)&limit=10`);
     return { type:'info', data: rows.map(r=>({title:r.title, preview:(r.content||'').slice(0,80), category:r.category})) };
   } catch(e) { return { type:'action_err', content:`자료 검색 실패: ${e.message}` }; }
+}
+
+async function execRecallMemory(a) {
+  try {
+    const q = encodeURIComponent(a.query);
+    const rows = await SION.db.select('memories', `content=ilike.*${q}*&order=created_at.desc&limit=10`);
+    return { type:'info', data: rows.map(r=>r.content) };
+  } catch(e) { return { type:'action_err', content:`기억 검색 실패: ${e.message}` }; }
 }
 
 // ── 마크다운 변환 (경량) ──────────────────────
@@ -561,6 +616,8 @@ function addMsg(role, payload, t) {
 
   let bub = '';
   let speakBtn = '';
+  let copyBtn = '';
+  let tokenLabel = '';
   if (role === 'user') {
     bub = `<div class="bubble">${SION.util.esc(payload)}</div>`;
   } else {
@@ -571,7 +628,9 @@ function addMsg(role, payload, t) {
       const aid = 'a'+(audioCounter++);
       audioStore[aid] = text;
       speakBtn = `<button class="msg-speak-btn" data-aid="${aid}" title="음성으로 듣기">🔊</button>`;
+      copyBtn = `<button class="msg-speak-btn" data-copy-aid="${aid}" title="복사">📋</button>`;
     }
+    if (payload.tokens) tokenLabel = `<span style="opacity:.7">· ${formatTokens(payload.tokens)}tok</span>`;
     actions.forEach(a => {
       if (a.type === 'action_ok') {
         const ico = a.at==='schedule' ? '📅' : '📁';
@@ -584,11 +643,17 @@ function addMsg(role, payload, t) {
     if (!text && !actions.length) bub = `<div class="bubble" style="color:var(--tx-3)">(응답 없음)</div>`;
   }
 
-  const time = `<div class="msg-time">${speakBtn}${t}</div>`;
+  const time = `<div class="msg-time">${speakBtn}${copyBtn}${t}${tokenLabel}</div>`;
   w.innerHTML = `${av}<div class="msg-body">${bub}${time}</div>`;
   el.appendChild(w);
   el.querySelectorAll('.msg-speak-btn').forEach(b=>{
     b.addEventListener('click', ()=> speak(audioStore[b.dataset.aid]));
+  });
+  el.querySelectorAll('[data-copy-aid]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      try { await navigator.clipboard.writeText(audioStore[b.dataset.copyAid]); SION.ui.toast('복사됨','success'); }
+      catch(e) { SION.ui.toast('복사 실패','error'); }
+    });
   });
   el.scrollTop = el.scrollHeight;
 }
@@ -608,6 +673,7 @@ function nowTime() { const d=new Date(); return `${PAD(d.getHours())}:${PAD(d.ge
 async function send(text) {
   if (!text.trim() || thinking) return;
   thinking = true;
+  document.getElementById('regen-row').style.display = 'none';
   const sendBtn = document.getElementById('send-btn');
   const ta = document.getElementById('chat-ta');
   sendBtn.disabled = true; ta.value = ''; ta.style.height = 'auto'; updateBtn();
@@ -618,45 +684,55 @@ async function send(text) {
   document.getElementById('st-label').textContent = '생각하는 중...';
 
   try {
-    const msg = await callOpenAI(msgs, true);
+    const first = await callOpenAI(msgs, true);
+    const msg = first.message;
+    let tokenTotal = first.usage?.total_tokens || 0;
     let actionResults = [];
     let finalText = msg.content;
 
-    if (msg.tool_calls?.length) {
-      msgs.push({ role:'assistant', content: msg.content || null, tool_calls: msg.tool_calls });
+    switch (true) {
+      case !!msg.tool_calls?.length: {
+        msgs.push({ role:'assistant', content: msg.content || null, tool_calls: msg.tool_calls });
 
-      for (const tc of msg.tool_calls) {
-        let args = {};
-        try { args = JSON.parse(tc.function.arguments || '{}'); } catch(e) {}
-        let result;
-        switch (tc.function.name) {
-          case 'add_schedule':       result = await execSched(args); break;
-          case 'list_schedules':     result = await execListSchedules(args); break;
-          case 'complete_schedule':  result = await execCompleteSchedule(args); break;
-          case 'add_vault':          result = await execVault(args); break;
-          case 'search_vault':       result = await execSearchVault(args); break;
-          default: result = { type:'action_err', content:'알 수 없는 요청이에요.' };
+        for (const tc of msg.tool_calls) {
+          let args = {};
+          try { args = JSON.parse(tc.function.arguments || '{}'); } catch(e) {}
+          let result;
+          switch (tc.function.name) {
+            case 'add_schedule':       result = await execSched(args); break;
+            case 'list_schedules':     result = await execListSchedules(args); break;
+            case 'complete_schedule':  result = await execCompleteSchedule(args); break;
+            case 'add_vault':          result = await execVault(args); break;
+            case 'search_vault':       result = await execSearchVault(args); break;
+            case 'recall_memory':      result = await execRecallMemory(args); break;
+            default: result = { type:'action_err', content:'알 수 없는 요청이에요.' };
+          }
+          if (result.type === 'action_ok' || result.type === 'action_err') actionResults.push(result);
+          msgs.push({ role:'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
         }
-        if (result.type === 'action_ok' || result.type === 'action_err') actionResults.push(result);
-        msgs.push({ role:'tool', tool_call_id: tc.id, content: JSON.stringify(result) });
+
+        const finalResp = await callOpenAI(msgs, false);
+        tokenTotal += finalResp.usage?.total_tokens || 0;
+        finalText = finalResp.message.content || (actionResults.every(r=>r.type==='action_ok') ? '요청하신 작업을 모두 완료했어요.' : '일부 작업에서 문제가 있었어요.');
+        msgs.push({ role:'assistant', content: finalText });
+
+        hideTyping();
+        addMsg('assistant', { text: finalText, actions: actionResults, tokens: tokenTotal }, nowTime());
+
+        if (actionResults.some(r=>r.type==='action_ok')) { renderMiniSched(); loadStats(); }
+        break;
       }
-
-      const finalMsg = await callOpenAI(msgs, false);
-      finalText = finalMsg.content || (actionResults.every(r=>r.type==='action_ok') ? '요청하신 작업을 모두 완료했어요.' : '일부 작업에서 문제가 있었어요.');
-      msgs.push({ role:'assistant', content: finalText });
-
-      hideTyping();
-      addMsg('assistant', { text: finalText, actions: actionResults }, nowTime());
-
-      if (actionResults.some(r=>r.type==='action_ok')) { renderMiniSched(); loadStats(); }
-    } else {
-      msgs.push({ role:'assistant', content: msg.content });
-      hideTyping();
-      addMsg('assistant', { text: msg.content, actions: [] }, nowTime());
+      default: {
+        msgs.push({ role:'assistant', content: msg.content });
+        hideTyping();
+        addMsg('assistant', { text: msg.content, actions: [], tokens: tokenTotal }, nowTime());
+      }
     }
 
+    addSessionTokens(tokenTotal);
     if (aiSettings.voice_enabled && finalText) speak(finalText);
     document.getElementById('st-label').textContent = '온라인';
+    document.getElementById('regen-row').style.display = '';
     saveConv(text);
   } catch(e) {
     hideTyping();
@@ -665,6 +741,26 @@ async function send(text) {
     SION.ui.toast(e.message, 'error');
   }
   thinking = false; sendBtn.disabled = false; ta.focus();
+}
+
+// ── 마지막 응답 다시 생성 ──────────────────────
+function removeLastExchangeFromUI() {
+  const el = document.getElementById('chat-msgs');
+  for (let i=0;i<2;i++){
+    const nodes = el.querySelectorAll('.msg');
+    if (nodes.length) nodes[nodes.length-1].remove();
+  }
+}
+async function regenerateLast() {
+  if (thinking) return;
+  let lastUserIdx = -1;
+  for (let i=msgs.length-1;i>=0;i--) { if (msgs[i].role==='user') { lastUserIdx=i; break; } }
+  if (lastUserIdx === -1) return;
+  const lastUserText = msgs[lastUserIdx].content;
+  msgs = msgs.slice(0, lastUserIdx);
+  removeLastExchangeFromUI();
+  document.getElementById('regen-row').style.display = 'none';
+  send(lastUserText);
 }
 
 // ── AI 설정 ───────────────────────────────────
@@ -829,6 +925,7 @@ async function loadConvs() {
         const chatEl = document.getElementById('chat-msgs');
         chatEl.innerHTML = '';
         msgs.forEach(m=> addMsg(m.role, m.role==='user' ? m.content : { text:m.content, actions:[] }, '—'));
+        document.getElementById('regen-row').style.display = (msgs.length && msgs[msgs.length-1].role==='assistant') ? '' : 'none';
         document.querySelectorAll('.conv-item').forEach(c=>c.classList.toggle('active', c.dataset.id===id));
       });
     });
@@ -861,6 +958,7 @@ async function autoResumeRecent() {
     const chatEl = document.getElementById('chat-msgs');
     chatEl.innerHTML = '';
     msgs.forEach(m=> addMsg(m.role, m.role==='user' ? m.content : { text:m.content, actions:[] }, '—'));
+    document.getElementById('regen-row').style.display = (msgs.length && msgs[msgs.length-1].role==='assistant') ? '' : 'none';
   } catch(e) {}
 }
 
@@ -924,6 +1022,7 @@ document.getElementById('chat-ta').addEventListener('keydown',function(e){
 });
 document.getElementById('send-btn').addEventListener('click',()=>{const v=document.getElementById('chat-ta').value.trim();if(v)send(v);});
 document.getElementById('mic-btn').addEventListener('click', toggleMic);
+document.getElementById('btn-regenerate').addEventListener('click', regenerateLast);
 document.querySelectorAll('.qcmd').forEach(b=>b.addEventListener('click',()=>send(b.dataset.cmd)));
 document.getElementById('btn-voice-toggle').addEventListener('click', async ()=>{
   aiSettings.voice_enabled = !aiSettings.voice_enabled;
@@ -952,6 +1051,7 @@ document.getElementById('mem-add-input').addEventListener('keydown', e=>{
 document.getElementById('btn-new-chat').addEventListener('click',()=>{
   if (msgs.length) extractMemories(compactMsgsForSave());
   msgs=[]; convId=null;
+  document.getElementById('regen-row').style.display = 'none';
   const el=document.getElementById('chat-msgs');
   el.innerHTML=`<div class="chat-empty" id="chat-empty">
     <div class="empty-icon">✦</div>
